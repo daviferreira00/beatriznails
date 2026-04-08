@@ -4,6 +4,7 @@
   "description": "Sistema de agendamentos para designer de unhas",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "dev": "node server.js"
   },
   "dependencies": {
