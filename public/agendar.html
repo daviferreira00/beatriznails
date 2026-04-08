@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agendar Horário | Beatriz Beauty</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#f7f2f5] p-4">
+
+<div class="max-w-6xl mx-auto py-6 md:py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-[#eadde5]">
+
+        <section class="hidden lg:flex flex-col justify-center items-center bg-[#f9f5f8] px-10 py-12 border-r border-[#eadde5]">
+            <div class="bg-white rounded-[2rem] shadow-lg p-6 border border-[#efe4ea]">
+                <img
+                        src="/assets/logo-beatriz-beauty.jpg"
+                        alt="Logo Beatriz Beauty"
+                        class="w-full max-w-[320px] object-contain rounded-2xl"
+                />
+            </div>
+
+            <div class="text-center mt-8 max-w-md">
+                <h1 class="text-4xl font-semibold tracking-wide text-[#b78ea5]">Beatriz Beauty</h1>
+                <p class="mt-3 text-[#7d6a75] text-base leading-relaxed">
+                    Agende seu horário com praticidade e escolha o melhor serviço para você.
+                </p>
+            </div>
+        </section>
+
+        <section class="px-6 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-14">
+            <div class="w-full">
+
+                <div class="lg:hidden text-center mb-8">
+                    <div class="bg-white rounded-[1.5rem] shadow-md p-4 border border-[#efe4ea] inline-flex">
+                        <img
+                                src="/assets/logo-beatriz-beauty.jpg"
+                                alt="Logo Beatriz Beauty"
+                                class="w-28 h-28 object-contain rounded-2xl"
+                        />
+                    </div>
+
+                    <h1 class="mt-5 text-3xl font-semibold text-[#b78ea5]">Beatriz Beauty</h1>
+                    <p class="mt-2 text-sm text-[#7d6a75]">Agende seu horário</p>
+                </div>
+
+                <div class="mb-8">
+                    <p class="text-sm font-medium tracking-[0.18em] uppercase text-[#bfa3b1]">
+                        Agendamento online
+                    </p>
+                    <h2 class="mt-3 text-3xl sm:text-4xl font-semibold text-[#3f3138]">
+                        Escolha seu horário
+                    </h2>
+                    <p class="mt-2 text-[#7d6a75]">
+                        Informe seu telefone para buscar seu cadastro automaticamente.
+                    </p>
+                </div>
+
+                <form id="agendamentoForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Telefone</label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input
+                                    id="telefoneBusca"
+                                    type="text"
+                                    placeholder="Digite seu telefone"
+                                    class="flex-1 rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                            />
+                            <button
+                                    type="button"
+                                    id="buscarTelefone"
+                                    class="rounded-2xl bg-[#b78ea5] px-5 py-3 text-white font-semibold shadow-md transition hover:bg-[#a97f97]"
+                            >
+                                Buscar cadastro
+                            </button>
+                        </div>
+                        <p class="text-xs text-[#7d6a75] mt-2">
+                            Se você já é cliente, seus dados serão preenchidos automaticamente.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Nome</label>
+                        <input
+                                id="nome"
+                                type="text"
+                                required
+                                placeholder="Seu nome"
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Telefone de contato</label>
+                        <input
+                                id="telefone"
+                                type="text"
+                                required
+                                placeholder="Seu telefone"
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">E-mail</label>
+                        <input
+                                id="email"
+                                type="email"
+                                placeholder="Seu e-mail (opcional)"
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        />
+                    </div>
+
+                    <!-- SERVIÇO 1 -->
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Serviço 1</label>
+                        <select
+                                id="servico1"
+                                required
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        >
+                            <option value="">Selecione um serviço</option>
+                        </select>
+                    </div>
+
+                    <!-- SERVIÇO 2 -->
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Serviço 2 (opcional)</label>
+                        <select
+                                id="servico2"
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        >
+                            <option value="">Nenhum</option>
+                        </select>
+                        <p id="avisoAplicacao" class="text-xs text-[#7d6a75] mt-2">
+                            Se escolher “Aplicação”, você só poderá selecionar 1 serviço.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Data</label>
+                        <input
+                                id="data"
+                                type="date"
+                                required
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        />
+                        <p class="text-xs text-[#7d6a75] mt-2">Atendimentos de segunda a sábado.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Observações</label>
+                        <input
+                                id="observacoes"
+                                type="text"
+                                placeholder="Opcional"
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        />
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                            <label class="block text-sm font-medium text-[#5e4b55]">Horários disponíveis</label>
+                            <button
+                                    type="button"
+                                    id="buscarHorarios"
+                                    class="bg-[#b78ea5] hover:bg-[#a97f97] text-white px-5 py-3 rounded-2xl font-semibold transition shadow-md"
+                            >
+                                Buscar horários
+                            </button>
+                        </div>
+
+                        <div id="horarios" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+                    </div>
+
+                    <input type="hidden" id="horaSelecionada" />
+
+                    <div class="md:col-span-2">
+                        <button
+                                type="submit"
+                                class="w-full rounded-2xl bg-[#b78ea5] px-4 py-3.5 text-white font-semibold shadow-md transition hover:bg-[#a97f97]"
+                        >
+                            Confirmar agendamento
+                        </button>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <div id="mensagem" class="hidden rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <a
+                                id="whatsappBtn"
+                                href="#"
+                                target="_blank"
+                                class="hidden w-full text-center rounded-2xl bg-green-600 px-4 py-3.5 text-white font-semibold shadow-md transition hover:bg-green-700"
+                        >
+                            Falar no WhatsApp
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    const telefoneBuscaInput = document.getElementById("telefoneBusca");
+    const buscarTelefoneBtn = document.getElementById("buscarTelefone");
+
+    const nomeInput = document.getElementById("nome");
+    const telefoneInput = document.getElementById("telefone");
+    const emailInput = document.getElementById("email");
+
+    const servico1Select = document.getElementById("servico1");
+    const servico2Select = document.getElementById("servico2");
+    const avisoAplicacao = document.getElementById("avisoAplicacao");
+
+    const dataInput = document.getElementById("data");
+    const horariosDiv = document.getElementById("horarios");
+    const buscarHorariosBtn = document.getElementById("buscarHorarios");
+    const horaSelecionadaInput = document.getElementById("horaSelecionada");
+    const mensagem = document.getElementById("mensagem");
+    const form = document.getElementById("agendamentoForm");
+    const whatsappBtn = document.getElementById("whatsappBtn");
+
+    const WHATSAPP_NUMERO = "5583999055896";
+
+    let servicosCache = [];
+
+    function limparTelefone(valor) {
+        return String(valor || "").replace(/\D/g, "");
+    }
+
+    function definirDataMinima() {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        dataInput.min = `${ano}-${mes}-${dia}`;
+    }
+
+    function mostrarMensagem(texto, tipo = "erro") {
+        mensagem.textContent = texto;
+        mensagem.className = "rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+
+        if (tipo === "sucesso") {
+            mensagem.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
+        } else {
+            mensagem.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
+        }
+    }
+
+    function limparMensagem() {
+        mensagem.textContent = "";
+        mensagem.className = "hidden rounded-2xl px-4 py-3 text-sm font-medium text-center";
+    }
+
+    function esconderWhatsapp() {
+        whatsappBtn.classList.add("hidden");
+        whatsappBtn.href = "#";
+    }
+
+    function mostrarWhatsapp(link) {
+        whatsappBtn.href = link;
+        whatsappBtn.classList.remove("hidden");
+    }
+
+    function travarCamposCliente(travar) {
+        nomeInput.readOnly = travar;
+        telefoneInput.readOnly = travar;
+        emailInput.readOnly = travar;
+
+        const classeBase = "w-full rounded-2xl border px-4 py-3 text-[#3f3138] outline-none transition";
+        const classeNormal = " border-[#e8d9e2] bg-[#fffdfe] focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]";
+        const classeTravado = " border-[#e8d9e2] bg-[#f5f1f3]";
+
+        nomeInput.className = classeBase + (travar ? classeTravado : classeNormal);
+        telefoneInput.className = classeBase + (travar ? classeTravado : classeNormal);
+        emailInput.className = classeBase + (travar ? classeTravado : classeNormal);
+    }
+
+    function limparDadosCliente() {
+        nomeInput.value = "";
+        telefoneInput.value = "";
+        emailInput.value = "";
+        travarCamposCliente(false);
+    }
+
+    async function buscarClientePorTelefone() {
+        limparMensagem();
+        esconderWhatsapp();
+
+        const telefoneBusca = limparTelefone(telefoneBuscaInput.value);
+
+        if (!telefoneBusca) {
+            mostrarMensagem("Digite um telefone para buscar.");
+            limparDadosCliente();
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/clientes/telefone/${encodeURIComponent(telefoneBusca)}`);
+            const cliente = await response.json();
+
+            if (response.ok) {
+                nomeInput.value = cliente.nome || "";
+                telefoneInput.value = cliente.telefone || "";
+                emailInput.value = cliente.email || "";
+                travarCamposCliente(true);
+                mostrarMensagem("Cadastro encontrado. Agora escolha o(s) serviço(s), data e horário.", "sucesso");
+            } else {
+                limparDadosCliente();
+                mostrarMensagem("Esse número não possui cadastro.");
+            }
+        } catch (error) {
+            limparDadosCliente();
+            mostrarMensagem("Erro ao buscar cadastro pelo telefone.");
+        }
+    }
+
+    buscarTelefoneBtn.addEventListener("click", buscarClientePorTelefone);
+
+    function validarDataSelecionada() {
+        const valor = dataInput.value;
+        if (!valor) return false;
+
+        const dataSelecionada = new Date(valor + "T00:00:00");
+        const diaSemana = dataSelecionada.getDay();
+
+        if (diaSemana === 0) {
+            mostrarMensagem("Não atendemos aos domingos. Escolha outra data.");
+            horariosDiv.innerHTML = "";
+            horaSelecionadaInput.value = "";
+            esconderWhatsapp();
+            return false;
+        }
+
+        return true;
+    }
+
+    function getServicoById(id) {
+        return servicosCache.find(s => String(s.id) === String(id));
+    }
+
+    function isAplicacao(id) {
+        const s = getServicoById(id);
+        return s ? String(s.nome || "").toLowerCase().includes("aplica") : false;
+    }
+
+    function aplicarRegrasServicos() {
+        const s1 = servico1Select.value;
+        const s2 = servico2Select.value;
+
+        // não pode repetir
+        if (s1 && s2 && s1 === s2) {
+            servico2Select.value = "";
+        }
+
+        const s1Aplic = s1 && isAplicacao(s1);
+        const s2Aplic = s2 && isAplicacao(s2);
+
+        if (s1Aplic || s2Aplic) {
+            // se algum for aplicação, bloqueia o segundo select (fica apenas 1 serviço)
+            servico2Select.value = "";
+            servico2Select.disabled = true;
+            servico2Select.classList.add("opacity-60", "cursor-not-allowed");
+            avisoAplicacao.classList.add("text-[#b78ea5]");
+        } else {
+            servico2Select.disabled = false;
+            servico2Select.classList.remove("opacity-60", "cursor-not-allowed");
+            avisoAplicacao.classList.remove("text-[#b78ea5]");
+        }
+    }
+
+    async function carregarServicos() {
+        try {
+            servico1Select.innerHTML = '<option value="">Selecione um serviço</option>';
+            servico2Select.innerHTML = '<option value="">Nenhum</option>';
+
+            const response = await fetch("/api/servicos");
+            const servicos = await response.json();
+
+            if (!response.ok) throw new Error();
+
+            if (!Array.isArray(servicos) || servicos.length === 0) {
+                mostrarMensagem("No momento não há serviços disponíveis.");
+                return;
+            }
+
+            servicosCache = servicos;
+
+            servicos.forEach((servico) => {
+                const texto = `${servico.nome} - R$ ${Number(servico.valor).toFixed(2)}`;
+
+                const option1 = document.createElement("option");
+                option1.value = servico.id;
+                option1.textContent = texto;
+                servico1Select.appendChild(option1);
+
+                const option2 = document.createElement("option");
+                option2.value = servico.id;
+                option2.textContent = texto;
+                servico2Select.appendChild(option2);
+            });
+
+            aplicarRegrasServicos();
+        } catch (error) {
+            mostrarMensagem("Erro ao carregar os serviços.");
+        }
+    }
+
+    servico1Select.addEventListener("change", () => {
+        aplicarRegrasServicos();
+        esconderWhatsapp();
+    });
+
+    servico2Select.addEventListener("change", () => {
+        aplicarRegrasServicos();
+        esconderWhatsapp();
+    });
+
+    function resetarBotoesHorario() {
+        document.querySelectorAll("#horarios button").forEach((b) => {
+            b.className =
+                "rounded-2xl border border-[#e8d9e2] bg-white px-4 py-3 font-semibold text-[#5e4b55] hover:bg-[#f9f2f6] hover:border-[#dcbccc] transition";
+        });
+    }
+
+    function criarBotaoHorario(horario) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = horario.slice(0, 5);
+        btn.className =
+            "rounded-2xl border border-[#e8d9e2] bg-white px-4 py-3 font-semibold text-[#5e4b55] hover:bg-[#f9f2f6] hover:border-[#dcbccc] transition";
+
+        btn.addEventListener("click", () => {
+            resetarBotoesHorario();
+            btn.className =
+                "rounded-2xl border border-[#b78ea5] bg-[#b78ea5] px-4 py-3 font-semibold text-white transition";
+            horaSelecionadaInput.value = horario;
+            esconderWhatsapp();
+        });
+
+        return btn;
+    }
+
+    function formatarDataBR(dataISO) {
+        const [ano, mes, dia] = dataISO.split("-");
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    function gerarLinkWhatsapp({ nome, servicoTexto, data, hora }) {
+        const mensagemWhatsapp =
+            `Olá! Meu nome é ${nome}. Acabei de solicitar um agendamento na Beatriz Beauty.%0A` +
+            `Serviço(s): ${servicoTexto}%0A` +
+            `Data: ${formatarDataBR(data)}%0A` +
+            `Horário: ${hora.slice(0, 5)}%0A` +
+            `Poderia confirmar meu horário, por favor?`;
+
+        return `https://wa.me/${WHATSAPP_NUMERO}?text=${mensagemWhatsapp}`;
+    }
+
+    buscarHorariosBtn.addEventListener("click", async () => {
+        limparMensagem();
+        esconderWhatsapp();
+        horariosDiv.innerHTML = "";
+        horaSelecionadaInput.value = "";
+
+        const data = dataInput.value;
+
+        if (!data) {
+            mostrarMensagem("Selecione uma data primeiro.");
+            return;
+        }
+
+        if (!validarDataSelecionada()) return;
+
+        try {
+            const response = await fetch(`/api/agendamentos/disponiveis?data=${data}`);
+            const horarios = await response.json();
+
+            if (!response.ok) {
+                mostrarMensagem(horarios.erro || "Erro ao buscar horários.");
+                return;
+            }
+
+            if (!Array.isArray(horarios) || horarios.length === 0) {
+                mostrarMensagem("Não há horários disponíveis para esta data.");
+                return;
+            }
+
+            horarios.forEach((horario) => {
+                horariosDiv.appendChild(criarBotaoHorario(horario));
+            });
+        } catch (error) {
+            mostrarMensagem("Erro ao buscar horários disponíveis.");
+        }
+    });
+
+    dataInput.addEventListener("change", () => {
+        limparMensagem();
+        esconderWhatsapp();
+        horariosDiv.innerHTML = "";
+        horaSelecionadaInput.value = "";
+        validarDataSelecionada();
+    });
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limparMensagem();
+        esconderWhatsapp();
+
+        const nome = nomeInput.value.trim();
+        const telefone = limparTelefone(telefoneInput.value);
+        const email = emailInput.value.trim();
+
+        const servico_id = servico1Select.value;
+        const servico_id_2 = servico2Select.disabled ? null : (servico2Select.value || null);
+
+        const data_agendamento = dataInput.value;
+        const hora_agendamento = horaSelecionadaInput.value;
+        const observacoes = document.getElementById("observacoes").value.trim();
+
+        if (!validarDataSelecionada()) return;
+
+        if (!servico_id) {
+            mostrarMensagem("Selecione o Serviço 1.");
+            return;
+        }
+
+        if (!hora_agendamento) {
+            mostrarMensagem("Selecione um horário disponível.");
+            return;
+        }
+
+        // regra extra no front: se aplicação, não enviar serviço 2
+        if (servico_id_2 && (isAplicacao(servico_id) || isAplicacao(servico_id_2))) {
+            mostrarMensagem("Ao escolher Aplicação, é permitido selecionar apenas 1 serviço.");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/agendamentos/publico", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nome,
+                    telefone,
+                    email,
+                    servico_id,
+                    servico_id_2,
+                    data_agendamento,
+                    hora_agendamento,
+                    observacoes
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const s1Nome = servico1Select.options[servico1Select.selectedIndex].text.split(" - ")[0];
+                const s2Nome = servico_id_2 ? servico2Select.options[servico2Select.selectedIndex].text.split(" - ")[0] : null;
+                const servicoTexto = s2Nome ? `${s1Nome} + ${s2Nome}` : s1Nome;
+
+                mostrarMensagem(data.mensagem || "Agendamento realizado com sucesso!", "sucesso");
+
+                const linkWhatsapp = gerarLinkWhatsapp({
+                    nome,
+                    servicoTexto,
+                    data: data_agendamento,
+                    hora: hora_agendamento
+                });
+
+                mostrarWhatsapp(linkWhatsapp);
+
+                form.reset();
+                servico2Select.disabled = false;
+                servico2Select.classList.remove("opacity-60", "cursor-not-allowed");
+                horariosDiv.innerHTML = "";
+                horaSelecionadaInput.value = "";
+                definirDataMinima();
+                travarCamposCliente(false);
+                aplicarRegrasServicos();
+            } else {
+                mostrarMensagem(data.erro || "Não foi possível concluir o agendamento.");
+            }
+        } catch (error) {
+            mostrarMensagem("Erro ao conectar com o servidor.");
+        }
+    });
+
+    definirDataMinima();
+    carregarServicos();
+</script>
+</body>
+</html>

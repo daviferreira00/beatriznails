@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Beatriz Beauty</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#f7f2f5] flex items-center justify-center p-4">
+
+<div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-[#eadde5]">
+
+    <!-- Lado visual -->
+    <section class="hidden lg:flex flex-col justify-center items-center bg-[#f9f5f8] px-10 py-12 border-r border-[#eadde5]">
+        <div class="w-full max-w-md flex items-center justify-center">
+            <div class="bg-white rounded-[2rem] shadow-lg p-6 border border-[#efe4ea]">
+                <img
+                        src="/assets/logo-beatriz-beauty.jpg"
+                        alt="Logo Beatriz Beauty"
+                        class="w-full max-w-[320px] object-contain rounded-2xl"
+                />
+            </div>
+        </div>
+
+        <div class="text-center mt-8 max-w-md">
+            <h1 class="text-4xl font-semibold tracking-wide text-[#b78ea5]">
+                Beatriz Beauty
+            </h1>
+            <p class="mt-3 text-[#7d6a75] text-base leading-relaxed">
+                Sistema de gestão para atendimento, clientes, serviços e agendamentos do seu salão de unhas.
+            </p>
+        </div>
+    </section>
+
+    <!-- Lado formulário -->
+    <section class="flex items-center justify-center px-6 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-14">
+        <div class="w-full max-w-md">
+
+            <!-- Logo mobile -->
+            <div class="lg:hidden text-center mb-8">
+                <div class="bg-white rounded-[1.5rem] shadow-md p-4 border border-[#efe4ea] inline-flex">
+                    <img
+                            src="/assets/logo-beatriz-beauty.jpg"
+                            alt="Logo Beatriz Beauty"
+                            class="w-32 h-32 object-contain rounded-2xl"
+                    />
+                </div>
+
+                <h1 class="mt-5 text-3xl font-semibold text-[#b78ea5]">Beatriz Beauty</h1>
+                <p class="mt-2 text-sm text-[#7d6a75]">Gestão para salão de unhas</p>
+            </div>
+
+            <div class="mb-8">
+                <p class="text-sm font-medium tracking-[0.18em] uppercase text-[#bfa3b1]">
+                    Acesso ao sistema
+                </p>
+                <h2 class="mt-3 text-3xl sm:text-4xl font-semibold text-[#3f3138]">
+                    Entrar
+                </h2>
+                <p class="mt-2 text-[#7d6a75]">
+                    Faça login para acessar o painel administrativo.
+                </p>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-[#5e4b55] mb-2">
+                        E-mail
+                    </label>
+                    <input
+                            type="text"
+                            id="email"
+                            name="email"
+                            placeholder="Digite seu e-mail"
+                            required
+                            class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                    />
+                </div>
+
+                <div>
+                    <label for="senha" class="block text-sm font-medium text-[#5e4b55] mb-2">
+                        Senha
+                    </label>
+                    <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            placeholder="Digite sua senha"
+                            required
+                            class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                    />
+                </div>
+
+                <button
+                        id="btnEntrar"
+                        type="submit"
+                        class="w-full rounded-2xl bg-[#b78ea5] px-4 py-3.5 text-white font-semibold shadow-md transition hover:bg-[#a97f97]"
+                >
+                    Entrar no sistema
+                </button>
+
+                <div
+                        id="mensagem"
+                        class="hidden rounded-2xl px-4 py-3 text-sm font-medium text-center"
+                ></div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<script>
+    const loginForm = document.getElementById("loginForm");
+    const mensagem = document.getElementById("mensagem");
+    const btnEntrar = document.getElementById("btnEntrar");
+
+    // Se já estiver logado, pula pro painel
+    const tokenExistente = localStorage.getItem("token");
+    if (tokenExistente) {
+        window.location.href = "/painel.html";
+    }
+
+    function mostrarMensagem(texto, tipo = "erro") {
+        mensagem.textContent = texto;
+        mensagem.className = "rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+
+        if (tipo === "sucesso") {
+            mensagem.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
+        } else {
+            mensagem.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
+        }
+    }
+
+    function limparMensagem() {
+        mensagem.textContent = "";
+        mensagem.className = "hidden rounded-2xl px-4 py-3 text-sm font-medium text-center";
+    }
+
+    function setLoading(isLoading) {
+        btnEntrar.disabled = isLoading;
+        btnEntrar.classList.toggle("opacity-70", isLoading);
+        btnEntrar.classList.toggle("cursor-not-allowed", isLoading);
+        btnEntrar.textContent = isLoading ? "Entrando..." : "Entrar no sistema";
+    }
+
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limparMensagem();
+
+        const email = document.getElementById("email").value.trim();
+        const senha = document.getElementById("senha").value.trim();
+
+        try {
+            setLoading(true);
+
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, senha })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (!data.token) {
+                    mostrarMensagem("Login OK, mas token não foi recebido. Verifique o backend.", "erro");
+                    setLoading(false);
+                    return;
+                }
+
+                localStorage.setItem("token", data.token);
+                window.location.href = "/painel.html";
+            } else {
+                mostrarMensagem(data.message || "E-mail ou senha inválidos.");
+                setLoading(false);
+            }
+        } catch (error) {
+            mostrarMensagem("Erro ao conectar com o servidor.");
+            setLoading(false);
+        }
+    });
+</script>
+</body>
+</html>

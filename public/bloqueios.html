@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bloqueios | Beatriz Beauty</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f7f2f5] min-h-screen">
+<div id="sidebar"></div>
+
+<div class="min-h-screen md:ml-72">
+    <header class="bg-white/95 border-b border-[#eadde5] px-4 md:px-8 py-4">
+        <div class="flex items-center gap-3">
+            <button id="openSidebar" class="md:hidden bg-[#b78ea5] text-white px-3 py-2 rounded-xl">☰</button>
+            <div class="flex items-center gap-3">
+                <img src="/assets/logo-beatriz-beauty.jpg" class="w-12 h-12 rounded-2xl object-cover border border-[#efe4ea]" />
+                <div>
+                    <h1 class="text-2xl font-semibold text-[#b78ea5]">Bloquear horários</h1>
+                    <p class="text-sm text-[#7d6a75]">Defina horários indisponíveis</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div id="mensagem" class="hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <section class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-[#3f3138] mb-4">Novo bloqueio</h2>
+
+                <form id="formBloqueio" class="space-y-4">
+                    <input id="data" type="date" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                    <div class="grid grid-cols-2 gap-3">
+                        <input id="inicio" type="time" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                        <input id="fim" type="time" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                    </div>
+                    <input id="motivo" type="text" placeholder="Motivo (opcional)" class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+
+                    <button class="w-full rounded-2xl bg-[#b78ea5] text-white py-3.5 font-semibold hover:bg-[#a97f97] transition">
+                        Criar bloqueio
+                    </button>
+                </form>
+            </section>
+
+            <section class="xl:col-span-2 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-xl font-semibold text-[#3f3138]">Bloqueios cadastrados</h2>
+                    <button id="atualizar" class="bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-4 py-2 rounded-2xl font-medium transition">
+                        Atualizar
+                    </button>
+                </div>
+
+                <div id="lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="/components/sidebar.js"></script>
+<script src="/components/auth.js"></script>
+<script>
+    const msg = document.getElementById("mensagem");
+    const form = document.getElementById("formBloqueio");
+    const lista = document.getElementById("lista");
+    const btnAtualizar = document.getElementById("atualizar");
+
+    function show(texto, tipo="erro"){
+        msg.textContent = texto;
+        msg.className = "mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+        msg.classList.add(tipo==="sucesso" ? "bg-green-50" : "bg-red-50");
+        msg.classList.add(tipo==="sucesso" ? "text-green-700" : "text-red-700");
+        msg.classList.add("border", tipo==="sucesso" ? "border-green-200" : "border-red-200");
+    }
+    function hide(){ msg.className = "hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center"; }
+
+    function card(b){
+        const div = document.createElement("div");
+        div.className = "rounded-3xl border border-[#efe4ea] p-5 bg-[#fcfafb]";
+        const d = String(b.data_bloqueio).slice(0,10).split("-").reverse().join("/");
+        div.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="font-semibold text-[#3f3138]">${d}</p>
+            <p class="text-sm text-[#7d6a75] mt-2">⏱️ ${String(b.hora_inicio).slice(0,5)} - ${String(b.hora_fim).slice(0,5)}</p>
+            <p class="text-sm text-[#7d6a75] mt-1">📝 ${b.motivo || "Sem motivo"}</p>
+          </div>
+          <button data-id="${b.id}" class="btn-del bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition">
+            Excluir
+          </button>
+        </div>
+      `;
+        return div;
+    }
+
+    async function carregar(){
+        hide();
+        lista.innerHTML = `<div class="col-span-full text-[#7d6a75]">Carregando...</div>`;
+        const res = await fetch("/api/bloqueios");
+        const data = await res.json();
+        if (!res.ok) { show(data.erro || "Erro ao listar"); return; }
+
+        lista.innerHTML = "";
+        if (!data.length){
+            lista.innerHTML = `<div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">Nenhum bloqueio ainda.</div>`;
+            return;
+        }
+
+        data.forEach(b => lista.appendChild(card(b)));
+
+        document.querySelectorAll(".btn-del").forEach(btn=>{
+            btn.addEventListener("click", async ()=>{
+                if(!confirm("Excluir bloqueio?")) return;
+                const id = btn.dataset.id;
+                const r = await fetch(`/api/bloqueios/${id}`, { method:"DELETE" });
+                const j = await r.json();
+                if(!r.ok){ show(j.erro || "Erro ao excluir"); return; }
+                show(j.mensagem || "Removido", "sucesso");
+                carregar();
+            });
+        });
+    }
+
+    form.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        hide();
+
+        const payload = {
+            data_bloqueio: document.getElementById("data").value,
+            hora_inicio: document.getElementById("inicio").value + ":00",
+            hora_fim: document.getElementById("fim").value + ":00",
+            motivo: document.getElementById("motivo").value.trim()
+        };
+
+        const res = await fetch("/api/bloqueios", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if(!res.ok){ show(data.erro || "Erro ao criar"); return; }
+
+        show(data.mensagem || "Bloqueio criado", "sucesso");
+        form.reset();
+        carregar();
+    });
+
+    btnAtualizar.addEventListener("click", carregar);
+    carregar();
+</script>
+</body>
+</html>

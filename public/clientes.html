@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clientes | Beatriz Beauty</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f7f2f5] min-h-screen">
+
+<div id="sidebar"></div>
+
+<div class="min-h-screen md:ml-72">
+    <header class="bg-white/95 border-b border-[#eadde5] px-4 md:px-8 py-4">
+        <div class="flex items-center gap-3">
+            <button id="openSidebar" class="md:hidden bg-[#b78ea5] text-white px-3 py-2 rounded-xl">☰</button>
+            <div class="flex items-center gap-3">
+                <img src="/assets/logo-beatriz-beauty.jpg" alt="Logo" class="w-12 h-12 rounded-2xl object-cover border border-[#efe4ea]" />
+                <div>
+                    <h1 class="text-2xl font-semibold text-[#b78ea5]">Clientes</h1>
+                    <p class="text-sm text-[#7d6a75]">Cadastre, edite e gerencie as clientes</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <section class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 id="tituloFormulario" class="text-xl font-semibold text-[#3f3138]">Nova cliente</h2>
+                    <button
+                            id="cancelarEdicao"
+                            type="button"
+                            class="hidden text-sm font-medium text-[#b78ea5] hover:underline"
+                    >
+                        Cancelar edição
+                    </button>
+                </div>
+
+                <form id="formCliente" class="space-y-4">
+                    <input id="nome" type="text" placeholder="Nome da cliente" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+
+                    <input id="telefone" type="text" placeholder="Telefone" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+
+                    <input id="email" type="email" placeholder="E-mail (opcional)" class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+
+                    <textarea id="observacoes" rows="4" placeholder="Observações" class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none resize-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]"></textarea>
+
+                    <button id="btnSalvar" type="submit" class="w-full rounded-2xl bg-[#b78ea5] text-white py-3.5 font-semibold hover:bg-[#a97f97] transition">
+                        Cadastrar cliente
+                    </button>
+                </form>
+
+                <div id="mensagem" class="hidden mt-4 rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
+            </section>
+
+            <section class="xl:col-span-2 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-xl font-semibold text-[#3f3138]">Clientes cadastradas</h2>
+                    <button id="atualizarLista" class="bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-4 py-2 rounded-2xl font-medium transition">
+                        Atualizar
+                    </button>
+                </div>
+
+                <div id="listaClientes" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="/components/sidebar.js"></script>
+<script src="/components/auth.js"></script>
+<script>
+    const formCliente = document.getElementById("formCliente");
+    const listaClientes = document.getElementById("listaClientes");
+    const mensagem = document.getElementById("mensagem");
+    const atualizarListaBtn = document.getElementById("atualizarLista");
+
+    const tituloFormulario = document.getElementById("tituloFormulario");
+    const btnSalvar = document.getElementById("btnSalvar");
+    const cancelarEdicaoBtn = document.getElementById("cancelarEdicao");
+
+    const nomeInput = document.getElementById("nome");
+    const telefoneInput = document.getElementById("telefone");
+    const emailInput = document.getElementById("email");
+    const observacoesInput = document.getElementById("observacoes");
+
+    let clienteEmEdicaoId = null;
+
+    function mostrarMensagem(texto, tipo = "erro") {
+        mensagem.textContent = texto;
+        mensagem.className = "mt-4 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+
+        if (tipo === "sucesso") {
+            mensagem.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
+        } else {
+            mensagem.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
+        }
+    }
+
+    function limparMensagem() {
+        mensagem.textContent = "";
+        mensagem.className = "hidden mt-4 rounded-2xl px-4 py-3 text-sm font-medium text-center";
+    }
+
+    function resetarFormulario() {
+        formCliente.reset();
+        clienteEmEdicaoId = null;
+        tituloFormulario.textContent = "Nova cliente";
+        btnSalvar.textContent = "Cadastrar cliente";
+        cancelarEdicaoBtn.classList.add("hidden");
+    }
+
+    function iniciarEdicao(cliente) {
+        clienteEmEdicaoId = cliente.id;
+        nomeInput.value = cliente.nome || "";
+        telefoneInput.value = cliente.telefone || "";
+        emailInput.value = cliente.email || "";
+        observacoesInput.value = cliente.observacoes || "";
+
+        tituloFormulario.textContent = "Editar cliente";
+        btnSalvar.textContent = "Salvar alterações";
+        cancelarEdicaoBtn.classList.remove("hidden");
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function criarCardCliente(cliente) {
+        const card = document.createElement("div");
+        card.className = "rounded-3xl border border-[#efe4ea] p-5 bg-[#fcfafb]";
+
+        card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <h3 class="text-lg font-semibold text-[#3f3138] break-words">${cliente.nome}</h3>
+            <p class="text-sm text-[#7d6a75] mt-2">📞 ${cliente.telefone}</p>
+            <p class="text-sm text-[#7d6a75] mt-1">✉️ ${cliente.email || "Não informado"}</p>
+            <p class="text-sm text-[#7d6a75] mt-3 break-words">${cliente.observacoes || "Sem observações"}</p>
+          </div>
+
+          <div class="flex flex-col gap-2 shrink-0">
+            <button
+              class="btn-editar bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-2xl font-medium transition"
+              data-id="${cliente.id}"
+            >
+              Editar
+            </button>
+
+            <button
+              class="btn-remover bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition"
+              data-id="${cliente.id}"
+            >
+              Excluir
+            </button>
+          </div>
+        </div>
+      `;
+
+        return card;
+    }
+
+    async function carregarClientes() {
+        listaClientes.innerHTML = `
+        <div class="col-span-full text-[#7d6a75]">Carregando clientes...</div>
+      `;
+
+        try {
+            const response = await fetch("/api/clientes");
+            const clientes = await response.json();
+
+            if (!response.ok) {
+                throw new Error(clientes.erro || "Erro ao listar clientes");
+            }
+
+            listaClientes.innerHTML = "";
+
+            if (!Array.isArray(clientes) || clientes.length === 0) {
+                listaClientes.innerHTML = `
+            <div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">
+              Nenhuma cliente cadastrada ainda.
+            </div>
+          `;
+                return;
+            }
+
+            clientes.forEach((cliente) => {
+                listaClientes.appendChild(criarCardCliente(cliente));
+            });
+
+            document.querySelectorAll(".btn-editar").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.id;
+
+                    try {
+                        const response = await fetch(`/api/clientes/${id}`);
+                        const cliente = await response.json();
+
+                        if (response.ok) {
+                            iniciarEdicao(cliente);
+                        } else {
+                            mostrarMensagem(cliente.erro || "Erro ao carregar cliente para edição");
+                        }
+                    } catch {
+                        mostrarMensagem("Erro ao conectar com o servidor");
+                    }
+                });
+            });
+
+            document.querySelectorAll(".btn-remover").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.id;
+
+                    if (!confirm("Deseja realmente excluir esta cliente?")) return;
+
+                    try {
+                        const response = await fetch(`/api/clientes/${id}`, {
+                            method: "DELETE"
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            mostrarMensagem(data.mensagem || "Cliente removida com sucesso", "sucesso");
+                            if (clienteEmEdicaoId === Number(id)) {
+                                resetarFormulario();
+                            }
+                            carregarClientes();
+                        } else {
+                            mostrarMensagem(data.erro || "Erro ao remover cliente");
+                        }
+                    } catch {
+                        mostrarMensagem("Erro ao conectar com o servidor");
+                    }
+                });
+            });
+        } catch (error) {
+            listaClientes.innerHTML = `
+          <div class="col-span-full rounded-3xl border border-red-200 bg-red-50 p-6 text-center text-red-600">
+            Erro ao carregar clientes.
+          </div>
+        `;
+        }
+    }
+
+    formCliente.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limparMensagem();
+
+        const payload = {
+            nome: nomeInput.value.trim(),
+            telefone: telefoneInput.value.trim(),
+            email: emailInput.value.trim(),
+            observacoes: observacoesInput.value.trim()
+        };
+
+        try {
+            let response;
+
+            if (clienteEmEdicaoId) {
+                response = await fetch(`/api/clientes/${clienteEmEdicaoId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                response = await fetch("/api/clientes", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            const data = await response.json();
+
+            if (response.ok) {
+                mostrarMensagem(
+                    data.mensagem || (clienteEmEdicaoId ? "Cliente atualizada com sucesso" : "Cliente cadastrada com sucesso"),
+                    "sucesso"
+                );
+                resetarFormulario();
+                carregarClientes();
+            } else {
+                mostrarMensagem(data.erro || "Erro ao salvar cliente");
+            }
+        } catch {
+            mostrarMensagem("Erro ao conectar com o servidor");
+        }
+    });
+
+    cancelarEdicaoBtn.addEventListener("click", () => {
+        resetarFormulario();
+        limparMensagem();
+    });
+
+    atualizarListaBtn.addEventListener("click", carregarClientes);
+
+    carregarClientes();
+</script>
+</body>
+</html>
