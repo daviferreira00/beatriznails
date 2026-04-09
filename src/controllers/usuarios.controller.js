@@ -63,19 +63,41 @@ exports.updateProfile = async (req, res) => {
         const { nome, email } = req.body;
         const id = req.user.id;
 
-        const [rows] = await db.query("SELECT foto FROM usuarios WHERE id = ?", [id]);
+        const [rows] = await db.query(
+            "SELECT foto FROM usuarios WHERE id = ?",
+            [id]
+        );
+
+        if (!rows.length) {
+            return res.status(404).json({ erro: "Usuário não encontrado" });
+        }
+
         let fotoUrl = rows[0].foto;
 
         if (req.file) {
             fotoUrl = `/assets/profiles/${req.file.filename}`;
         }
 
-        const query = "UPDATE usuarios SET nome = ?, email = ?, foto = ? WHERE id = ?";
-        await db.query(query, [nome, email, fotoUrl, id]);
+        await db.query(
+            "UPDATE usuarios SET nome = ?, email = ?, foto = ? WHERE id = ?",
+            [nome, email, fotoUrl, id]
+        );
+
+        const [userRows] = await db.query(
+            "SELECT * FROM usuarios WHERE id = ?",
+            [id]
+        );
+
+        if (!userRows.length) {
+            return res.status(404).json({ erro: "Usuário não encontrado após atualização" });
+        }
+
+        const userData = { ...userRows[0] };
+        delete userData.senha;
 
         return res.status(200).json({
             mensagem: "Perfil atualizado!",
-            user_data: { id, nome, email, foto: fotoUrl }
+            user_data: userData
         });
     } catch (error) {
         console.error("Erro ao atualizar perfil:", error);
