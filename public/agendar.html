@@ -52,30 +52,23 @@
                         Escolha seu horário
                     </h2>
                     <p class="mt-2 text-[#7d6a75]">
-                        Informe seu telefone para buscar seu cadastro automaticamente.
+                        Preencha seus dados abaixo para continuar.
                     </p>
                 </div>
 
                 <form id="agendamentoForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Telefone</label>
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <input
-                                    id="telefoneBusca"
-                                    type="text"
-                                    placeholder="Digite seu telefone"
-                                    class="flex-1 rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
-                            />
-                            <button
-                                    type="button"
-                                    id="buscarTelefone"
-                                    class="rounded-2xl bg-[#b78ea5] px-5 py-3 text-white font-semibold shadow-md transition hover:bg-[#a97f97]"
-                            >
-                                Buscar cadastro
-                            </button>
-                        </div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Telefone de contato</label>
+                        <input
+                                id="telefone"
+                                type="text"
+                                required
+                                placeholder="Digite seu telefone com DDD"
+                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                        />
                         <p class="text-xs text-[#7d6a75] mt-2">
-                            Se você já é cliente, seus dados serão preenchidos automaticamente.
+                            Ao inserir seu número, buscaremos seu cadastro automaticamente.
                         </p>
                     </div>
 
@@ -91,17 +84,6 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Telefone de contato</label>
-                        <input
-                                id="telefone"
-                                type="text"
-                                required
-                                placeholder="Seu telefone"
-                                class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
-                        />
-                    </div>
-
-                    <div>
                         <label class="block text-sm font-medium text-[#5e4b55] mb-2">E-mail</label>
                         <input
                                 id="email"
@@ -111,7 +93,6 @@
                         />
                     </div>
 
-                    <!-- SERVIÇO 1 -->
                     <div>
                         <label class="block text-sm font-medium text-[#5e4b55] mb-2">Serviço 1</label>
                         <select
@@ -123,7 +104,6 @@
                         </select>
                     </div>
 
-                    <!-- SERVIÇO 2 -->
                     <div>
                         <label class="block text-sm font-medium text-[#5e4b55] mb-2">Serviço 2 (opcional)</label>
                         <select
@@ -205,11 +185,8 @@
 </div>
 
 <script>
-    const telefoneBuscaInput = document.getElementById("telefoneBusca");
-    const buscarTelefoneBtn = document.getElementById("buscarTelefone");
-
-    const nomeInput = document.getElementById("nome");
     const telefoneInput = document.getElementById("telefone");
+    const nomeInput = document.getElementById("nome");
     const emailInput = document.getElementById("email");
 
     const servico1Select = document.getElementById("servico1");
@@ -242,7 +219,7 @@
 
     function mostrarMensagem(texto, tipo = "erro") {
         mensagem.textContent = texto;
-        mensagem.className = "rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+        mensagem.className = "rounded-2xl px-4 py-3 text-sm font-medium text-center block mt-4";
 
         if (tipo === "sucesso") {
             mensagem.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
@@ -266,9 +243,9 @@
         whatsappBtn.classList.remove("hidden");
     }
 
+    // Trava apenas NOME e EMAIL. O telefone continua editável.
     function travarCamposCliente(travar) {
         nomeInput.readOnly = travar;
-        telefoneInput.readOnly = travar;
         emailInput.readOnly = travar;
 
         const classeBase = "w-full rounded-2xl border px-4 py-3 text-[#3f3138] outline-none transition";
@@ -276,50 +253,46 @@
         const classeTravado = " border-[#e8d9e2] bg-[#f5f1f3]";
 
         nomeInput.className = classeBase + (travar ? classeTravado : classeNormal);
-        telefoneInput.className = classeBase + (travar ? classeTravado : classeNormal);
         emailInput.className = classeBase + (travar ? classeTravado : classeNormal);
     }
 
     function limparDadosCliente() {
         nomeInput.value = "";
-        telefoneInput.value = "";
         emailInput.value = "";
         travarCamposCliente(false);
     }
 
-    async function buscarClientePorTelefone() {
+    // Evento disparado quando o usuário sai do campo de telefone
+    telefoneInput.addEventListener("blur", async () => {
         limparMensagem();
         esconderWhatsapp();
 
-        const telefoneBusca = limparTelefone(telefoneBuscaInput.value);
+        const telefoneBusca = limparTelefone(telefoneInput.value);
 
-        if (!telefoneBusca) {
-            mostrarMensagem("Digite um telefone para buscar.");
+        // Se estiver vazio ou muito curto, apenas limpa os dados sem avisar erros
+        if (!telefoneBusca || telefoneBusca.length < 10) {
             limparDadosCliente();
             return;
         }
 
         try {
             const response = await fetch(`/api/clientes/telefone/${encodeURIComponent(telefoneBusca)}`);
-            const cliente = await response.json();
 
             if (response.ok) {
+                const cliente = await response.json();
                 nomeInput.value = cliente.nome || "";
-                telefoneInput.value = cliente.telefone || "";
                 emailInput.value = cliente.email || "";
                 travarCamposCliente(true);
-                mostrarMensagem("Cadastro encontrado. Agora escolha o(s) serviço(s), data e horário.", "sucesso");
+                mostrarMensagem("Cadastro encontrado! Dados preenchidos automaticamente.", "sucesso");
             } else {
+                // Se não achou (ex: erro 404), limpa os campos para o usuário continuar a vida normalmente
                 limparDadosCliente();
-                mostrarMensagem("Esse número não possui cadastro.");
             }
         } catch (error) {
             limparDadosCliente();
-            mostrarMensagem("Erro ao buscar cadastro pelo telefone.");
+            // Erros de rede ignorados silenciosamente para não travar a experiência do novo usuário
         }
-    }
-
-    buscarTelefoneBtn.addEventListener("click", buscarClientePorTelefone);
+    });
 
     function validarDataSelecionada() {
         const valor = dataInput.value;
@@ -352,7 +325,6 @@
         const s1 = servico1Select.value;
         const s2 = servico2Select.value;
 
-        // não pode repetir
         if (s1 && s2 && s1 === s2) {
             servico2Select.value = "";
         }
@@ -361,7 +333,6 @@
         const s2Aplic = s2 && isAplicacao(s2);
 
         if (s1Aplic || s2Aplic) {
-            // se algum for aplicação, bloqueia o segundo select (fica apenas 1 serviço)
             servico2Select.value = "";
             servico2Select.disabled = true;
             servico2Select.classList.add("opacity-60", "cursor-not-allowed");
@@ -534,7 +505,6 @@
             return;
         }
 
-        // regra extra no front: se aplicação, não enviar serviço 2
         if (servico_id_2 && (isAplicacao(servico_id) || isAplicacao(servico_id_2))) {
             mostrarMensagem("Ao escolher Aplicação, é permitido selecionar apenas 1 serviço.");
             return;

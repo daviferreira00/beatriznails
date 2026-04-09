@@ -3,7 +3,7 @@ const router = express.Router();
 const controller = require("../controllers/clientes.controller");
 const { requireAuth } = require("../middlewares/auth.middleware");
 
-// público (usado no agendar.html)
+// público (usado no agendar)
 router.get("/telefone/:telefone", controller.buscarPorTelefone);
 
 // a partir daqui, tudo exige login

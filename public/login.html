@@ -116,7 +116,7 @@
     // Se já estiver logado, pula pro painel
     const tokenExistente = localStorage.getItem("token");
     if (tokenExistente) {
-        window.location.href = "/painel.html";
+        window.location.href = "/painel";
     }
 
     function mostrarMensagem(texto, tipo = "erro") {
@@ -168,7 +168,7 @@
                 }
 
                 localStorage.setItem("token", data.token);
-                window.location.href = "/painel.html";
+                window.location.href = "/painel";
             } else {
                 mostrarMensagem(data.message || "E-mail ou senha inválidos.");
                 setLoading(false);

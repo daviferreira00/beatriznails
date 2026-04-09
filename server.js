@@ -40,7 +40,7 @@ console.log("==========================================");
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 
 /**
  * DEBUG: log de requests básicas (rota, método)
@@ -52,8 +52,8 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-    console.log("🟢 GET / -> enviando login.html");
-    return res.sendFile(path.join(__dirname, "public", "login.html"));
+    console.log("🟢 GET / -> enviando login");
+    return res.sendFile(path.join(__dirname, "public", "login"));
 });
 
 /**

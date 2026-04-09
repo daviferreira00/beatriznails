@@ -22,32 +22,32 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
 
       <nav class="p-4 space-y-2">
-        <a href="/painel.html" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
+        <a href="/painel" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
           <span>🏠</span>
           <span class="font-medium">DashBoard</span>
         </a>
 
-        <a href="/clientes.html" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
+        <a href="/clientes" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
           <span>👩‍💼</span>
           <span class="font-medium">Clientes</span>
         </a>
 
-        <a href="/servicos.html" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
+        <a href="/servicos" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
           <span>💅</span>
           <span class="font-medium">Serviços</span>
         </a>
 
-        <a href="/agendamentos.html" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
+        <a href="/agendamentos" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
           <span>📅</span>
           <span class="font-medium">Agendamentos</span>
         </a>
 
-        <a href="/bloqueios.html" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
+        <a href="/bloqueios" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
           <span>⛔</span>
           <span class="font-medium">Bloqueios</span>
         </a>
         
-        <a href="/financeiro.html" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
+        <a href="/financeiro" class="flex items-center gap-3 rounded-2xl px-4 py-3 hover:bg-white/15 transition">
           <span>💰</span>
           <span class="font-medium">Financeiro</span>
         </a>
