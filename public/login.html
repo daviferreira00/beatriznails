@@ -152,29 +152,27 @@
         try {
             setLoading(true);
 
-            const response = await fetch("/login", {
+            const response = await fetch("/api/auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, senha })
             });
 
+            // ✅ LÊ O JSON APENAS UMA ÚNICA VEZ AQUI
             const data = await response.json();
 
             if (response.ok) {
-                if (!data.token) {
-                    mostrarMensagem("Login OK, mas token não foi recebido. Verifique o backend.", "erro");
-                    setLoading(false);
-                    return;
-                }
-
                 localStorage.setItem("token", data.token);
+                localStorage.setItem("user_data", JSON.stringify(data.user_data));
                 window.location.href = "/painel";
+
             } else {
-                mostrarMensagem(data.message || "E-mail ou senha inválidos.");
+                mostrarMensagem(data.erro || data.message || "E-mail ou senha inválidos.");
                 setLoading(false);
             }
         } catch (error) {
             mostrarMensagem("Erro ao conectar com o servidor.");
+            console.log(error);
             setLoading(false);
         }
     });

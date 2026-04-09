@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil | Beatriz Beauty</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+</head>
+<body class="bg-[#f7f2f5] min-h-screen">
+<div id="sidebar"></div>
+
+<div id="toastContainer" class="fixed top-5 right-5 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+<div class="min-h-screen md:ml-72">
+    <main class="max-w-4xl mx-auto p-4 md:p-12">
+        <h1 class="text-3xl font-bold text-[#3f3138] mb-8">Editar Perfil</h1>
+
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-[#eadde5]">
+            <form id="formPerfil" class="space-y-6">
+                <div class="flex flex-col items-center gap-4 border-b border-[#f3e7ee] pb-8">
+                    <div class="relative group">
+                        <img id="previewFoto" src="/assets/logo-beatriz-beauty.jpg" class="w-32 h-32 rounded-3xl object-cover border-4 border-[#f7f2f5] shadow-md transition-all">
+                        <button type="button" onclick="document.getElementById('inputFoto').click()"
+                                class="absolute inset-0 bg-black/40 rounded-3xl opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+                            ALTERAR FOTO
+                        </button>
+                    </div>
+                    <input type="file" id="inputFoto" class="hidden" accept="image/*">
+                    <p class="text-sm text-[#7d6a75]">Clique na imagem para trocar</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Nome</label>
+                        <input id="perfilNome" type="text" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">E-mail</label>
+                        <input id="perfilEmail" type="email" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition">
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                    <button type="submit" class="flex-1 rounded-2xl bg-[#b78ea5] text-white py-3.5 font-semibold hover:bg-[#a97f97] transition shadow-md">Salvar Alterações</button>
+                    <button type="button" onclick="abrirModalSenha()" class="flex-1 rounded-2xl bg-[#f3e7ee] text-[#b78ea5] py-3.5 font-semibold hover:bg-[#eddce6] transition">Mudar Senha</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<div id="modalCorte" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+        <h3 class="text-xl font-bold mb-4 text-[#3f3138]">Ajustar Foto</h3>
+        <div class="max-h-[400px] overflow-hidden rounded-2xl mb-4 bg-gray-100">
+            <img id="imagemParaCortar" class="max-w-full">
+        </div>
+        <div class="flex gap-2">
+            <button onclick="finalizarCorte()" class="flex-1 bg-[#b78ea5] hover:bg-[#a97f97] text-white py-3 rounded-2xl font-bold transition shadow-md">Cortar e Usar</button>
+            <button onclick="fecharModalCorte()" class="flex-1 bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] py-3 rounded-2xl font-bold transition">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalSenha" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+        <h3 class="text-2xl font-bold text-[#3f3138] mb-6">Mudar Senha</h3>
+        <form id="formSenha" class="space-y-4">
+            <input id="senhaAntiga" type="password" placeholder="Senha Atual" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition">
+            <input id="senhaNova" type="password" placeholder="Nova Senha" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition">
+            <input id="senhaConfirma" type="password" placeholder="Confirmar Nova Senha" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition">
+            <div class="flex gap-2 mt-6">
+                <button type="submit" class="flex-1 bg-[#b78ea5] hover:bg-[#a97f97] text-white py-3 rounded-2xl font-bold transition shadow-md">Alterar</button>
+                <button type="button" onclick="fecharModalSenha()" class="flex-1 bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] py-3 rounded-2xl font-bold transition">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="/components/sidebar.js"></script>
+<script src="/components/auth.js"></script>
+<script>
+    const user = JSON.parse(localStorage.getItem('user_data')) || { nome: "", email: "", foto: "" };
+    let cropper = null;
+    let blobCorte = null;
+
+    // Função de Notificação (Toast)
+    function mostrarNotificacao(texto, tipo = 'sucesso') {
+        const toast = document.createElement('div');
+        // Define as cores baseadas no tipo (sucesso = verde, erro = vermelho)
+        const cores = tipo === 'sucesso'
+            ? 'bg-green-50 text-green-700 border-green-200'
+            : 'bg-red-50 text-red-700 border-red-200';
+
+        toast.className = `transform transition-all duration-300 translate-x-full border rounded-2xl shadow-lg px-5 py-4 flex items-center gap-3 ${cores}`;
+
+        // Ícones diferentes para sucesso ou erro usando SVG
+        const icone = tipo === 'sucesso'
+            ? `<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+            : `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+        toast.innerHTML = `
+            ${icone}
+            <span class="font-semibold text-sm">${texto}</span>
+        `;
+
+        document.getElementById('toastContainer').appendChild(toast);
+
+        // Dispara a animação de entrada
+        setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+
+        // Remove o toast após 3.5 segundos
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 3500);
+    }
+
+    // Preencher dados iniciais
+    document.getElementById('perfilNome').value = user.nome;
+    document.getElementById('perfilEmail').value = user.email;
+    if(user.foto) document.getElementById('previewFoto').src = user.foto;
+
+    // Logica de Troca de Foto e Corte
+    document.getElementById('inputFoto').onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            document.getElementById('imagemParaCortar').src = event.target.result;
+            document.getElementById('modalCorte').classList.remove('hidden');
+            if(cropper) cropper.destroy();
+            cropper = new Cropper(document.getElementById('imagemParaCortar'), {
+                aspectRatio: 1,
+                viewMode: 1
+            });
+        };
+        reader.readAsDataURL(file);
+    };
+
+    function finalizarCorte() {
+        cropper.getCroppedCanvas().toBlob((blob) => {
+            blobCorte = blob;
+            document.getElementById('previewFoto').src = URL.createObjectURL(blob);
+            fecharModalCorte();
+        });
+    }
+
+    function fecharModalCorte() { document.getElementById('modalCorte').classList.add('hidden'); }
+    function abrirModalSenha() { document.getElementById('modalSenha').classList.remove('hidden'); }
+
+    function fecharModalSenha() {
+        document.getElementById('modalSenha').classList.add('hidden');
+        document.getElementById('formSenha').reset(); // Limpa os campos ao fechar
+    }
+
+    // Submit Perfil
+    document.getElementById('formPerfil').onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('nome', document.getElementById('perfilNome').value);
+        formData.append('email', document.getElementById('perfilEmail').value);
+        if(blobCorte) formData.append('foto', blobCorte, 'perfil.jpg');
+
+        try {
+            const res = await fetch('/api/usuarios/profile', {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData
+            });
+
+            if(res.ok) {
+                const data = await res.json();
+                localStorage.setItem('user_data', JSON.stringify(data.user_data));
+
+                mostrarNotificacao('Perfil atualizado com sucesso!', 'sucesso');
+
+                // Aguarda um pouco para o usuário ver a notificação antes de recarregar
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                mostrarNotificacao('Erro ao atualizar perfil.', 'erro');
+            }
+        } catch (error) {
+            mostrarNotificacao('Erro de conexão com o servidor.', 'erro');
+        }
+    };
+
+    // Submit Senha
+    document.getElementById('formSenha').onsubmit = async (e) => {
+        e.preventDefault();
+        const sNova = document.getElementById('senhaNova').value;
+        if(sNova !== document.getElementById('senhaConfirma').value) {
+            return mostrarNotificacao('As novas senhas não conferem!', 'erro');
+        }
+
+        try {
+            const res = await fetch('/api/usuarios/change-password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    senhaAntiga: document.getElementById('senhaAntiga').value,
+                    senhaNova: sNova
+                })
+            });
+
+            if(res.ok) {
+                mostrarNotificacao('Senha alterada com sucesso!', 'sucesso');
+                fecharModalSenha();
+            } else {
+                const d = await res.json();
+                mostrarNotificacao(d.erro || 'Erro ao alterar a senha.', 'erro');
+            }
+        } catch (error) {
+            mostrarNotificacao('Erro de conexão com o servidor.', 'erro');
+        }
+    };
+</script>
+</body>
+</html>
