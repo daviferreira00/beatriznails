@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 
 require("dotenv").config();
-
+const relatoriosRoutes = require("./src/routes/relatorios.routes");
 const clientesRoutes = require("./src/routes/clientes.routes");
 const servicosRoutes = require("./src/routes/servicos.routes");
 const agendamentosRoutes = require("./src/routes/agendamentos.routes");
@@ -34,6 +34,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
+app.use("/api/relatorios", relatoriosRoutes);
 
 
 app.use((req, res, next) => {
