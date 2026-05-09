@@ -27,6 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
         { href: "/agendamentos", icon: "lucide:calendar-days", label: "Agendamentos", adminOnly: false },
         { href: "/bloqueios", icon: "lucide:calendar-off", label: "Bloqueios", adminOnly: true },
         { href: "/financeiro", icon: "lucide:circle-dollar-sign", label: "Financeiro", adminOnly: true },
+
+        // ✅ NOVO: Aniversariantes
+        { href: "/aniversariantes.html", icon: "lucide:cake", label: "Aniversariantes", adminOnly: true },
+
         { href: "/usuarios", icon: "lucide:user-cog", label: "Usuários", adminOnly: true },
     ];
 
