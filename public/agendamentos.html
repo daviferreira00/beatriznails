@@ -236,22 +236,16 @@
         mensagem.className = "hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center";
     }
 
-    function formatarHora(hora) {
-        return hora ? String(hora).slice(0, 5) : "-";
-    }
-    function formatarMoeda(valor) {
-        return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    }
+    function formatarHora(hora) { return hora ? String(hora).slice(0, 5) : "-"; }
+    function formatarMoeda(valor) { return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
     function formatarData(dataISO) {
         if (!dataISO) return "-";
         const d = String(dataISO).slice(0, 10);
         const [y, m, day] = d.split("-");
         return `${day}/${m}/${y}`;
     }
-    function normalizarData(dataISO) {
-        if (!dataISO) return "";
-        return String(dataISO).slice(0, 10);
-    }
+    function normalizarData(dataISO) { return dataISO ? String(dataISO).slice(0, 10) : ""; }
+
     function corStatus(status) {
         const mapa = {
             AGENDADO: "bg-yellow-50 text-yellow-700 border border-yellow-200",
@@ -261,10 +255,31 @@
         };
         return mapa[status] || "bg-gray-50 text-gray-700 border border-gray-200";
     }
+
     function textoPagamento(agendamento) {
         const forma = (agendamento.forma_pagamento || "PENDENTE");
-        if (agendamento.pago) return `Pago • ${forma}`;
-        return `Pendente • ${forma}`;
+        return agendamento.pago ? `Pago • ${forma}` : `Pendente • ${forma}`;
+    }
+
+    async function atualizarStatus(id, status) {
+        try {
+            const response = await fetch(`/api/agendamentos/${id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                mostrarMensagem(data.mensagem || "Status atualizado com sucesso", "sucesso");
+                carregarAgendamentos();
+            } else {
+                mostrarMensagem(data.erro || "Erro ao atualizar status");
+            }
+        } catch {
+            mostrarMensagem("Erro ao conectar com o servidor");
+        }
     }
 
     async function atualizarPagamento(id, pago, forma_pagamento) {
@@ -300,13 +315,10 @@
       <div class="flex flex-col gap-4">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h3 class="text-lg font-semibold text-[#3f3138] break-words">
-              ${agendamento.cliente || "Cliente não informado"}
-            </h3>
+            <h3 class="text-lg font-semibold text-[#3f3138] break-words">${agendamento.cliente || "Cliente não informado"}</h3>
             <p class="text-sm text-[#7d6a75] mt-1 break-words">📞 ${agendamento.telefone || "Não informado"}</p>
             <p class="text-sm text-[#7d6a75] mt-1 break-words">💅 ${agendamento.servico || "Serviço não informado"}</p>
           </div>
-
           <span class="shrink-0 inline-flex items-center justify-center px-3 py-1 rounded-2xl text-xs font-semibold ${corStatus(agendamento.status)}">
             ${agendamento.status}
           </span>
@@ -317,17 +329,14 @@
             <p class="text-[#7d6a75]">Data</p>
             <p class="font-semibold text-[#3f3138]">${formatarData(agendamento.data_agendamento)}</p>
           </div>
-
           <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
             <p class="text-[#7d6a75]">Horário</p>
             <p class="font-semibold text-[#3f3138]">${formatarHora(agendamento.hora_agendamento)}</p>
           </div>
-
           <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
             <p class="text-[#7d6a75]">Valor</p>
             <p class="font-semibold text-[#3f3138]">${formatarMoeda(agendamento.valor_cobrado || agendamento.valor_servico)}</p>
           </div>
-
           <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
             <p class="text-[#7d6a75]">Pagamento</p>
             <p class="font-semibold text-[#3f3138]">${textoPagamento(agendamento)}</p>
@@ -339,7 +348,7 @@
           <p class="text-sm text-[#5e4b55] mt-1 break-words">${agendamento.observacoes || "Sem observações"}</p>
         </div>
 
-        <!-- ✅ Painel escondido -->
+        <!-- Painel escondido -->
         <div class="pagamento-panel hidden rounded-3xl border border-[#eadde5] bg-white p-4">
           <div class="flex items-center justify-between gap-3 mb-3">
             <p class="font-semibold text-[#3f3138]">Pagamento</p>
@@ -395,27 +404,6 @@
         return card;
     }
 
-    async function atualizarStatus(id, status) {
-        try {
-            const response = await fetch(`/api/agendamentos/${id}/status`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                mostrarMensagem(data.mensagem || "Status atualizado com sucesso", "sucesso");
-                carregarAgendamentos();
-            } else {
-                mostrarMensagem(data.erro || "Erro ao atualizar status");
-            }
-        } catch {
-            mostrarMensagem("Erro ao conectar com o servidor");
-        }
-    }
-
     async function carregarAgendamentos() {
         limparMensagem();
         listaAgendamentos.innerHTML = `<div class="col-span-full text-[#7d6a75]">Carregando agendamentos...</div>`;
@@ -423,11 +411,9 @@
         try {
             const response = await fetch("/api/agendamentos");
             const agendamentos = await response.json();
-
             if (!response.ok) throw new Error(agendamentos.erro || "Erro ao listar agendamentos");
 
             let lista = Array.isArray(agendamentos) ? agendamentos : [];
-
             if (filtroStatus.value) lista = lista.filter(item => item.status === filtroStatus.value);
             if (filtroData.value) lista = lista.filter(item => normalizarData(item.data_agendamento) === filtroData.value);
 
@@ -446,16 +432,15 @@
                 listaAgendamentos.appendChild(criarCardAgendamento(agendamento));
             });
 
-            // ✅ Clique no card abre/fecha painel (mas não quando clica em botão/select/input)
+            // Clique no card abre/fecha painel (não quando clicar em botões/inputs/select)
             document.querySelectorAll("#listaAgendamentos > div[data-id]").forEach(card => {
                 card.addEventListener("click", (e) => {
                     const tag = (e.target.tagName || "").toLowerCase();
-                    if (tag === "button" || tag === "select" || tag === "input" || tag === "a" || tag === "option") return;
+                    if (["button","select","input","a","option"].includes(tag)) return;
 
                     const panel = card.querySelector(".pagamento-panel");
                     if (!panel) return;
 
-                    // fecha outros abertos
                     document.querySelectorAll(".pagamento-panel").forEach(p => {
                         if (p !== panel) p.classList.add("hidden");
                     });
@@ -464,7 +449,7 @@
                 });
             });
 
-            // ✅ Botões de status (não fecha/abre o painel)
+            // Botões de status
             document.querySelectorAll(".btn-status").forEach((btn) => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -472,20 +457,15 @@
                 });
             });
 
-            // ✅ Salvar pagamento
+            // Salvar pagamento
             document.querySelectorAll(".btn-salvar-pagamento").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     const card = btn.closest("[data-id]");
                     const id = btn.dataset.id;
-
                     const chk = card.querySelector(".chk-pago");
                     const sel = card.querySelector(".sel-forma");
-
-                    const pago = !!chk.checked;
-                    const forma = sel.value;
-
-                    atualizarPagamento(id, pago, forma);
+                    atualizarPagamento(id, !!chk.checked, sel.value);
                 });
             });
 
@@ -535,27 +515,13 @@
         if(tipo==="sucesso") msgModal.classList.add("bg-green-50","text-green-700","border","border-green-200");
         else msgModal.classList.add("bg-red-50","text-red-700","border","border-red-200");
     }
-    function hideModalMsg(){
-        msgModal.className = "hidden rounded-2xl px-4 py-3 text-sm font-medium text-center";
-    }
+    function hideModalMsg(){ msgModal.className = "hidden rounded-2xl px-4 py-3 text-sm font-medium text-center"; }
     function soNumeros(v){ return String(v||"").replace(/\D/g,""); }
 
-    function abrirModal(){
-        hideModalMsg();
-        modal.classList.remove("hidden");
-        setTimeout(()=> novoTelefone?.focus(), 50);
-    }
-    function fecharModal(){
-        modal.classList.add("hidden");
-        formNovo.reset();
-        novoHorario.innerHTML = `<option value="">Selecione a data primeiro</option>`;
-    }
+    function abrirModal(){ hideModalMsg(); modal.classList.remove("hidden"); setTimeout(()=> novoTelefone?.focus(), 50); }
+    function fecharModal(){ modal.classList.add("hidden"); formNovo.reset(); novoHorario.innerHTML = `<option value="">Selecione a data primeiro</option>`; }
 
-    btnNovoAgendamento?.addEventListener("click", async () => {
-        abrirModal();
-        await carregarServicosModal();
-    });
-
+    btnNovoAgendamento?.addEventListener("click", async () => { abrirModal(); await carregarServicosModal(); });
     modalOverlay?.addEventListener("click", fecharModal);
     fecharModalBtn?.addEventListener("click", fecharModal);
     cancelarModalBtn?.addEventListener("click", fecharModal);
@@ -563,13 +529,9 @@
     async function carregarServicosModal(){
         novoServico1.innerHTML = `<option value="">Selecione</option>`;
         novoServico2.innerHTML = `<option value="">Nenhum</option>`;
-
         const r = await fetch("/api/servicos");
         const servs = await r.json();
-        if(!r.ok){
-            showModalMsg(servs.erro || "Erro ao carregar serviços");
-            return;
-        }
+        if(!r.ok){ showModalMsg(servs.erro || "Erro ao carregar serviços"); return; }
         servs.forEach(s=>{
             const txt = `${s.nome} - R$ ${Number(s.valor||0).toFixed(2)}`;
             const o1=document.createElement("option"); o1.value=s.id; o1.textContent=txt; novoServico1.appendChild(o1);
@@ -580,17 +542,10 @@
     async function carregarHorariosModal(){
         novoHorario.innerHTML = `<option value="">Carregando...</option>`;
         const data = novoData.value;
-        if(!data){
-            novoHorario.innerHTML = `<option value="">Selecione a data primeiro</option>`;
-            return;
-        }
+        if(!data){ novoHorario.innerHTML = `<option value="">Selecione a data primeiro</option>`; return; }
         const r = await fetch(`/api/agendamentos/disponiveis?data=${data}`);
         const horarios = await r.json();
-        if(!r.ok){
-            showModalMsg(horarios.erro || "Erro ao buscar horários");
-            novoHorario.innerHTML = `<option value="">—</option>`;
-            return;
-        }
+        if(!r.ok){ showModalMsg(horarios.erro || "Erro ao buscar horários"); novoHorario.innerHTML = `<option value="">—</option>`; return; }
         novoHorario.innerHTML = `<option value="">Selecione</option>`;
         horarios.forEach(h=>{
             const o=document.createElement("option");
@@ -600,10 +555,7 @@
         });
     }
 
-    novoData?.addEventListener("change", () => {
-        hideModalMsg();
-        carregarHorariosModal();
-    });
+    novoData?.addEventListener("change", () => { hideModalMsg(); carregarHorariosModal(); });
 
     btnBuscarCliente?.addEventListener("click", async () => {
         hideModalMsg();
@@ -612,13 +564,8 @@
 
         const r = await fetch(`/api/clientes/telefone/${encodeURIComponent(tel)}`);
         const data = await r.json();
-        if(r.ok){
-            novoNome.value = data.nome || "";
-            novoEmail.value = data.email || "";
-            showModalMsg("Cliente encontrado ✅", "sucesso");
-        } else {
-            showModalMsg("Cliente não encontrado. Preencha o nome para cadastrar.", "erro");
-        }
+        if(r.ok){ novoNome.value = data.nome || ""; novoEmail.value = data.email || ""; showModalMsg("Cliente encontrado ✅", "sucesso"); }
+        else { showModalMsg("Cliente não encontrado. Preencha o nome para cadastrar.", "erro"); }
     });
 
     formNovo?.addEventListener("submit", async (e) => {
@@ -648,14 +595,9 @@
         });
         const data = await r.json();
 
-        if(r.ok){
-            showModalMsg(data.mensagem || "Agendamento criado ✅", "sucesso");
-            await carregarAgendamentos();
-        } else {
-            showModalMsg(data.erro || "Erro ao criar agendamento.");
-        }
+        if(r.ok){ showModalMsg(data.mensagem || "Agendamento criado ✅", "sucesso"); await carregarAgendamentos(); }
+        else { showModalMsg(data.erro || "Erro ao criar agendamento."); }
     });
-    // ===================== /MODAL =====================
 
     carregarAgendamentos();
 </script>
