@@ -62,3 +62,26 @@ exports.topClientesPago = async (req, res) => {
         res.status(500).json({ erro: "Erro ao gerar top clientes", detalhe: e.message });
     }
 };
+exports.aniversariantes = async (req, res) => {
+    try {
+        const { dia, mes } = req.query;
+
+        if (!dia || !mes) {
+            return res.status(400).json({ erro: "Informe dia e mes (ex: ?dia=7&mes=11)" });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT id, nome, telefone, data_nascimento
+       FROM clientes
+       WHERE data_nascimento IS NOT NULL
+         AND DAY(data_nascimento) = ?
+         AND MONTH(data_nascimento) = ?
+       ORDER BY nome ASC`,
+            [Number(dia), Number(mes)]
+        );
+
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json({ erro: "Erro ao listar aniversariantes", detalhe: e.message });
+    }
+};
