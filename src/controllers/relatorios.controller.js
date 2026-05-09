@@ -85,3 +85,38 @@ exports.aniversariantes = async (req, res) => {
         res.status(500).json({ erro: "Erro ao listar aniversariantes", detalhe: e.message });
     }
 };
+exports.clientesInativas = async (req, res) => {
+    try {
+        const dias = Number(req.query.dias || 60);
+        const limite = Number(req.query.limite || 50);
+
+        if (!Number.isFinite(dias) || dias <= 0) {
+            return res.status(400).json({ erro: "Parâmetro 'dias' inválido" });
+        }
+
+        const [rows] = await pool.query(
+            `
+      SELECT
+        c.id,
+        c.nome,
+        c.telefone,
+        c.email,
+        MAX(a.data_agendamento) AS ultimo_agendamento
+      FROM clientes c
+      LEFT JOIN agendamentos a
+        ON a.cliente_id = c.id
+       AND a.pago = 1
+      GROUP BY c.id
+      HAVING ultimo_agendamento IS NULL
+         OR ultimo_agendamento < DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      ORDER BY (ultimo_agendamento IS NULL) DESC, ultimo_agendamento ASC
+      LIMIT ?
+      `,
+            [dias, limite]
+        );
+
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json({ erro: "Erro ao buscar clientes inativas", detalhe: e.message });
+    }
+};

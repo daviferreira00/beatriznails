@@ -10,5 +10,6 @@ router.use(requireAuth);
 router.get("/top-servicos", controller.topServicosPago);
 router.get("/top-clientes", controller.topClientesPago);
 router.get("/aniversariantes", controller.aniversariantes);
+router.get("/inativas", controller.clientesInativas);
 
 module.exports = router;
