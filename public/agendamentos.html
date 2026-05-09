@@ -303,126 +303,106 @@
         }
     }
 
-        function criarCardAgendamento(agendamento) {
-            const card = document.createElement("div");
-            card.className = "rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5 cursor-pointer";
-            card.dataset.id = agendamento.id;
+    function criarCardAgendamento(agendamento) {
+        const card = document.createElement("div");
+        card.className = "rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5 cursor-pointer";
+        card.dataset.id = agendamento.id;
 
-            const pagoChecked = agendamento.pago ? "checked" : "";
-            const formaAtual = String(agendamento.forma_pagamento || "PENDENTE").toUpperCase();
+        const pagoChecked = agendamento.pago ? "checked" : "";
+        const formaAtual = String(agendamento.forma_pagamento || "PENDENTE").toUpperCase();
 
-            card.innerHTML = `
-    <div class="flex flex-col gap-4">
-
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h3 class="text-lg font-semibold text-[#3f3138] break-words">
-            ${agendamento.cliente || "Cliente não informado"}
-          </h3>
-          <p class="text-sm text-[#7d6a75] mt-1 break-words">📞 ${agendamento.telefone || "Não informado"}</p>
-          <p class="text-sm text-[#7d6a75] mt-1 break-words">💅 ${agendamento.servico || "Serviço não informado"}</p>
+        card.innerHTML = `
+      <div class="flex flex-col gap-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h3 class="text-lg font-semibold text-[#3f3138] break-words">${agendamento.cliente || "Cliente não informado"}</h3>
+            <p class="text-sm text-[#7d6a75] mt-1 break-words">📞 ${agendamento.telefone || "Não informado"}</p>
+            <p class="text-sm text-[#7d6a75] mt-1 break-words">💅 ${agendamento.servico || "Serviço não informado"}</p>
+          </div>
+          <span class="shrink-0 inline-flex items-center justify-center px-3 py-1 rounded-2xl text-xs font-semibold ${corStatus(agendamento.status)}">
+            ${agendamento.status}
+          </span>
         </div>
 
-        <span class="shrink-0 inline-flex items-center justify-center px-3 py-1 rounded-2xl text-xs font-semibold ${corStatus(agendamento.status)}">
-          ${agendamento.status}
-        </span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-        <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
-          <p class="text-[#7d6a75]">Data</p>
-          <p class="font-semibold text-[#3f3138]">${formatarData(agendamento.data_agendamento)}</p>
-        </div>
-
-        <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
-          <p class="text-[#7d6a75]">Horário</p>
-          <p class="font-semibold text-[#3f3138]">${formatarHora(agendamento.hora_agendamento)}</p>
-        </div>
-
-        <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
-          <p class="text-[#7d6a75]">Valor</p>
-          <p class="font-semibold text-[#3f3138]">${formatarMoeda(agendamento.valor_cobrado || agendamento.valor_servico)}</p>
-        </div>
-
-        <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
-          <p class="text-[#7d6a75]">Pagamento</p>
-          <p class="font-semibold text-[#3f3138]">${textoPagamento(agendamento)}</p>
-        </div>
-      </div>
-
-      <div>
-        <p class="text-sm text-[#7d6a75]">Observações</p>
-        <p class="text-sm text-[#5e4b55] mt-1 break-words">${agendamento.observacoes || "Sem observações"}</p>
-      </div>
-
-      <!-- ✅ Painel escondido (abre ao clicar no card) -->
-      <div class="pagamento-panel hidden rounded-3xl border border-[#eadde5] bg-white p-4">
-        <div class="flex items-center justify-between gap-3 mb-3">
-          <p class="font-semibold text-[#3f3138]">Pagamento</p>
-          <span class="text-xs text-[#7d6a75]">Clique no card para fechar</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label class="flex items-center gap-3 rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
-            <!-- ✅ classe chk-pago -->
-            <input type="checkbox" class="chk-pago w-5 h-5 accent-[#b78ea5]" ${pagoChecked} />
-            <span class="font-medium text-[#3f3138]">Marcar como pago</span>
-          </label>
-
-          <div class="rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
-            <p class="text-xs text-[#7d6a75] mb-2">Forma</p>
-            <!-- ✅ classe sel-forma -->
-            <select class="sel-forma w-full rounded-xl border border-[#e8d9e2] px-3 py-2 bg-white outline-none">
-              <option value="PENDENTE" ${formaAtual === "PENDENTE" ? "selected" : ""}>PENDENTE</option>
-              <option value="PIX" ${formaAtual === "PIX" ? "selected" : ""}>PIX</option>
-              <option value="DEBITO" ${formaAtual === "DEBITO" ? "selected" : ""}>DÉBITO</option>
-              <option value="CREDITO" ${formaAtual === "CREDITO" ? "selected" : ""}>CRÉDITO</option>
-              <option value="DINHEIRO" ${formaAtual === "DINHEIRO" ? "selected" : ""}>DINHEIRO</option>
-            </select>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
+            <p class="text-[#7d6a75]">Data</p>
+            <p class="font-semibold text-[#3f3138]">${formatarData(agendamento.data_agendamento)}</p>
+          </div>
+          <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
+            <p class="text-[#7d6a75]">Horário</p>
+            <p class="font-semibold text-[#3f3138]">${formatarHora(agendamento.hora_agendamento)}</p>
+          </div>
+          <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
+            <p class="text-[#7d6a75]">Valor</p>
+            <p class="font-semibold text-[#3f3138]">${formatarMoeda(agendamento.valor_cobrado || agendamento.valor_servico)}</p>
+          </div>
+          <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
+            <p class="text-[#7d6a75]">Pagamento</p>
+            <p class="font-semibold text-[#3f3138]">${textoPagamento(agendamento)}</p>
           </div>
         </div>
 
-        <!-- ✅ classe btn-salvar-pagamento -->
-        <button
-          type="button"
-          class="btn-salvar-pagamento mt-3 w-full rounded-2xl bg-[#b78ea5] hover:bg-[#a97f97] text-white px-4 py-3 font-semibold transition"
-          data-id="${agendamento.id}"
-        >
-          Salvar pagamento
-        </button>
+        <div>
+          <p class="text-sm text-[#7d6a75]">Observações</p>
+          <p class="text-sm text-[#5e4b55] mt-1 break-words">${agendamento.observacoes || "Sem observações"}</p>
+        </div>
+
+        <!-- Painel escondido -->
+        <div class="pagamento-panel hidden rounded-3xl border border-[#eadde5] bg-white p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <p class="font-semibold text-[#3f3138]">Pagamento</p>
+            <span class="text-xs text-[#7d6a75]">Clique fora dos botões para fechar</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
+              <input type="checkbox" class="chk-pago w-5 h-5 accent-[#b78ea5]" ${pagoChecked} />
+              <span class="font-medium text-[#3f3138]">Marcar como pago</span>
+            </label>
+
+            <div class="rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
+              <p class="text-xs text-[#7d6a75] mb-2">Forma</p>
+              <select class="sel-forma w-full rounded-xl border border-[#e8d9e2] px-3 py-2 bg-white outline-none">
+                <option value="PENDENTE" ${formaAtual==="PENDENTE" ? "selected":""}>PENDENTE</option>
+                <option value="PIX" ${formaAtual==="PIX" ? "selected":""}>PIX</option>
+                <option value="DEBITO" ${formaAtual==="DEBITO" ? "selected":""}>DÉBITO</option>
+                <option value="CREDITO" ${formaAtual==="CREDITO" ? "selected":""}>CRÉDITO</option>
+                <option value="DINHEIRO" ${formaAtual==="DINHEIRO" ? "selected":""}>DINHEIRO</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            class="btn-salvar-pagamento mt-3 w-full rounded-2xl bg-[#b78ea5] hover:bg-[#a97f97] text-white px-4 py-3 font-semibold transition"
+            data-id="${agendamento.id}"
+            type="button"
+          >
+            Salvar pagamento
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 border-t border-[#f0e7ec]">
+          <button class="btn-status w-full sm:w-auto bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-2xl font-medium transition"
+            data-id="${agendamento.id}" data-status="CONFIRMADO" type="button">
+            Confirmar
+          </button>
+
+          <button class="btn-status w-full sm:w-auto bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-2xl font-medium transition"
+            data-id="${agendamento.id}" data-status="REALIZADO" type="button">
+            Realizado
+          </button>
+
+          <button class="btn-status w-full sm:w-auto bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-2xl font-medium transition"
+            data-id="${agendamento.id}" data-status="CANCELADO" type="button">
+            Cancelar
+          </button>
+        </div>
       </div>
+    `;
 
-      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 border-t border-[#f0e7ec]">
-        <button
-          type="button"
-          class="btn-status w-full sm:w-auto bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-2xl font-medium transition"
-          data-id="${agendamento.id}" data-status="CONFIRMADO"
-        >
-          Confirmar
-        </button>
-
-        <button
-          type="button"
-          class="btn-status w-full sm:w-auto bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-2xl font-medium transition"
-          data-id="${agendamento.id}" data-status="REALIZADO"
-        >
-          Realizado
-        </button>
-
-        <button
-          type="button"
-          class="btn-status w-full sm:w-auto bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-2xl font-medium transition"
-          data-id="${agendamento.id}" data-status="CANCELADO"
-        >
-          Cancelar
-        </button>
-      </div>
-
-    </div>
-  `;
-
-            return card;
-        }
+        return card;
+    }
 
     async function carregarAgendamentos() {
         limparMensagem();
@@ -481,13 +461,24 @@
             document.querySelectorAll(".btn-salvar-pagamento").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
+
+                    const card = btn.closest("[data-id]");
                     const panel = btn.closest(".pagamento-panel");
-                    const id = btn.dataset.id;
+                    const id = btn.dataset.id || (card ? card.dataset.id : null);
 
-                    const chk = panel?.querySelector(".chk-pago");
-                    const sel = panel?.querySelector(".sel-forma");
+                    if (!card || !panel || !id) {
+                        mostrarMensagem("Não foi possível identificar o agendamento para salvar o pagamento.");
+                        return;
+                    }
 
-                    if (!chk || !sel) return;
+                    const chk = panel.querySelector(".chk-pago");
+                    const sel = panel.querySelector(".sel-forma");
+
+                    if (!chk || !sel) {
+                        console.error("Elementos não encontrados:", { chk, sel, panelHTML: panel.innerHTML });
+                        mostrarMensagem("Campos de pagamento não encontrados no card. Atualize a página e tente novamente.");
+                        return;
+                    }
 
                     atualizarPagamento(id, !!chk.checked, sel.value);
                 });
