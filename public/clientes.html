@@ -63,7 +63,6 @@
                             class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]"
                     />
 
-                    <!-- ✅ NOVO: DATA DE NASCIMENTO -->
                     <div>
                         <label class="block text-sm font-medium text-[#5e4b55] mb-2">Data de nascimento</label>
                         <input
@@ -128,20 +127,11 @@
 
     let clienteEmEdicaoId = null;
 
-    // (opcional) máscara simples de telefone BR
-    function soNumeros(v) {
-        return String(v || "").replace(/\D/g, "");
-    }
+    function soNumeros(v) { return String(v || "").replace(/\D/g, ""); }
     function formatarTelefoneBR(v) {
         const n = soNumeros(v).slice(0, 11);
-        if (n.length <= 10) {
-            return n
-                .replace(/^(\d{2})(\d)/, "($1) $2")
-                .replace(/(\d{4})(\d)/, "$1-$2");
-        }
-        return n
-            .replace(/^(\d{2})(\d)/, "($1) $2")
-            .replace(/(\d{5})(\d)/, "$1-$2");
+        if (n.length <= 10) return n.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+        return n.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
     }
     telefoneInput.addEventListener("input", () => {
         telefoneInput.value = formatarTelefoneBR(telefoneInput.value);
@@ -150,14 +140,12 @@
     function mostrarMensagem(texto, tipo = "erro") {
         mensagem.textContent = texto;
         mensagem.className = "mt-4 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
-
         if (tipo === "sucesso") {
             mensagem.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
         } else {
             mensagem.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
         }
     }
-
     function limparMensagem() {
         mensagem.textContent = "";
         mensagem.className = "hidden mt-4 rounded-2xl px-4 py-3 text-sm font-medium text-center";
@@ -178,16 +166,10 @@
         telefoneInput.value = cliente.telefone ? formatarTelefoneBR(cliente.telefone) : "";
         emailInput.value = cliente.email || "";
         observacoesInput.value = cliente.observacoes || "";
-
-        // ✅ preencher data_nascimento
-        dataNascimentoInput.value = cliente.data_nascimento
-            ? String(cliente.data_nascimento).slice(0, 10)
-            : "";
-
+        dataNascimentoInput.value = cliente.data_nascimento ? String(cliente.data_nascimento).slice(0, 10) : "";
         tituloFormulario.textContent = "Editar cliente";
         btnSalvar.textContent = "Salvar alterações";
         cancelarEdicaoBtn.classList.remove("hidden");
-
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -201,7 +183,6 @@
     function criarCardCliente(cliente) {
         const card = document.createElement("div");
         card.className = "rounded-3xl border border-[#efe4ea] p-5 bg-[#fcfafb]";
-
         const aniversario = cliente.data_nascimento ? formatarDataBR(cliente.data_nascimento) : null;
 
         card.innerHTML = `
@@ -215,58 +196,39 @@
         </div>
 
         <div class="flex flex-col gap-2 shrink-0">
-          <button
-            class="btn-editar bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-2xl font-medium transition"
-            data-id="${cliente.id}"
-          >
+          <button class="btn-editar bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-2xl font-medium transition" data-id="${cliente.id}">
             Editar
           </button>
-
-          <button
-            class="btn-remover bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition"
-            data-id="${cliente.id}"
-          >
+          <button class="btn-remover bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition" data-id="${cliente.id}">
             Excluir
           </button>
         </div>
       </div>
     `;
-
         return card;
     }
 
     async function carregarClientes() {
         listaClientes.innerHTML = `<div class="col-span-full text-[#7d6a75]">Carregando clientes...</div>`;
-
         try {
             const response = await fetch("/api/clientes");
             const clientes = await response.json();
-
             if (!response.ok) throw new Error(clientes.erro || "Erro ao listar clientes");
 
             listaClientes.innerHTML = "";
-
             if (!Array.isArray(clientes) || clientes.length === 0) {
-                listaClientes.innerHTML = `
-          <div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">
-            Nenhuma cliente cadastrada ainda.
-          </div>
-        `;
+                listaClientes.innerHTML = `<div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">Nenhuma cliente cadastrada ainda.</div>`;
                 return;
             }
 
-            clientes.forEach((cliente) => {
-                listaClientes.appendChild(criarCardCliente(cliente));
-            });
+            clientes.forEach((cliente) => listaClientes.appendChild(criarCardCliente(cliente)));
 
             document.querySelectorAll(".btn-editar").forEach((btn) => {
                 btn.addEventListener("click", async () => {
                     const id = btn.dataset.id;
-
                     try {
                         const response = await fetch(`/api/clientes/${id}`);
                         const cliente = await response.json();
-
                         if (response.ok) iniciarEdicao(cliente);
                         else mostrarMensagem(cliente.erro || "Erro ao carregar cliente para edição");
                     } catch {
@@ -279,11 +241,9 @@
                 btn.addEventListener("click", async () => {
                     const id = btn.dataset.id;
                     if (!confirm("Deseja realmente excluir esta cliente?")) return;
-
                     try {
                         const response = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
                         const data = await response.json();
-
                         if (response.ok) {
                             mostrarMensagem(data.mensagem || "Cliente removida com sucesso", "sucesso");
                             if (clienteEmEdicaoId === Number(id)) resetarFormulario();
@@ -296,12 +256,8 @@
                     }
                 });
             });
-        } catch (error) {
-            listaClientes.innerHTML = `
-        <div class="col-span-full rounded-3xl border border-red-200 bg-red-50 p-6 text-center text-red-600">
-          Erro ao carregar clientes.
-        </div>
-      `;
+        } catch {
+            listaClientes.innerHTML = `<div class="col-span-full rounded-3xl border border-red-200 bg-red-50 p-6 text-center text-red-600">Erro ao carregar clientes.</div>`;
         }
     }
 
@@ -311,15 +267,14 @@
 
         const payload = {
             nome: nomeInput.value.trim(),
-            telefone: soNumeros(telefoneInput.value), // ✅ salva limpo (somente números)
+            telefone: soNumeros(telefoneInput.value),
             email: emailInput.value.trim(),
-            data_nascimento: dataNascimentoInput.value || null, // ✅ novo campo
+            data_nascimento: dataNascimentoInput.value || null,
             observacoes: observacoesInput.value.trim()
         };
 
         try {
             let response;
-
             if (clienteEmEdicaoId) {
                 response = await fetch(`/api/clientes/${clienteEmEdicaoId}`, {
                     method: "PUT",
@@ -337,10 +292,7 @@
             const data = await response.json();
 
             if (response.ok) {
-                mostrarMensagem(
-                    data.mensagem || (clienteEmEdicaoId ? "Cliente atualizada com sucesso" : "Cliente cadastrada com sucesso"),
-                    "sucesso"
-                );
+                mostrarMensagem(data.mensagem || (clienteEmEdicaoId ? "Cliente atualizada com sucesso" : "Cliente cadastrada com sucesso"), "sucesso");
                 resetarFormulario();
                 carregarClientes();
             } else {

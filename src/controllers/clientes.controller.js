@@ -21,14 +21,12 @@ exports.buscarPorTelefone = async (req, res) => {
         const telefone = limparTelefone(req.params.telefone);
 
         const [rows] = await pool.query(
-            "SELECT id, nome, telefone, email FROM clientes WHERE telefone = ? LIMIT 1",
+            "SELECT id, nome, telefone, email, data_nascimento FROM clientes WHERE telefone = ? LIMIT 1",
             [telefone]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({
-                erro: "Esse número não possui cadastro"
-            });
+            return res.status(404).json({ erro: "Esse número não possui cadastro" });
         }
 
         res.json(rows[0]);
@@ -42,18 +40,16 @@ exports.buscarPorTelefone = async (req, res) => {
 
 exports.criar = async (req, res) => {
     try {
-        const { nome, telefone, email, observacoes } = req.body;
+        const { nome, telefone, email, observacoes, data_nascimento } = req.body;
         const telefoneLimpo = limparTelefone(telefone);
 
         if (!nome || !telefoneLimpo) {
-            return res.status(400).json({
-                erro: "Nome e telefone são obrigatórios"
-            });
+            return res.status(400).json({ erro: "Nome e telefone são obrigatórios" });
         }
 
         const [result] = await pool.query(
-            "INSERT INTO clientes (nome, telefone, email, observacoes) VALUES (?, ?, ?, ?)",
-            [nome, telefoneLimpo, email || null, observacoes || null]
+            "INSERT INTO clientes (nome, telefone, email, observacoes, data_nascimento) VALUES (?, ?, ?, ?, ?)",
+            [nome, telefoneLimpo, email || null, observacoes || null, data_nascimento || null]
         );
 
         res.status(201).json({
@@ -75,9 +71,7 @@ exports.buscarPorId = async (req, res) => {
         const [rows] = await pool.query("SELECT * FROM clientes WHERE id = ?", [id]);
 
         if (rows.length === 0) {
-            return res.status(404).json({
-                erro: "Cliente não encontrada"
-            });
+            return res.status(404).json({ erro: "Cliente não encontrada" });
         }
 
         res.json(rows[0]);
@@ -92,17 +86,15 @@ exports.buscarPorId = async (req, res) => {
 exports.atualizar = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nome, telefone, email, observacoes } = req.body;
+        const { nome, telefone, email, observacoes, data_nascimento } = req.body;
         const telefoneLimpo = limparTelefone(telefone);
 
         await pool.query(
-            "UPDATE clientes SET nome = ?, telefone = ?, email = ?, observacoes = ? WHERE id = ?",
-            [nome, telefoneLimpo, email || null, observacoes || null, id]
+            "UPDATE clientes SET nome = ?, telefone = ?, email = ?, observacoes = ?, data_nascimento = ? WHERE id = ?",
+            [nome, telefoneLimpo, email || null, observacoes || null, data_nascimento || null, id]
         );
 
-        res.json({
-            mensagem: "Cliente atualizada com sucesso"
-        });
+        res.json({ mensagem: "Cliente atualizada com sucesso" });
     } catch (error) {
         res.status(500).json({
             erro: "Erro ao atualizar cliente",
@@ -118,16 +110,12 @@ exports.remover = async (req, res) => {
         const [rows] = await pool.query("SELECT id FROM clientes WHERE id = ?", [id]);
 
         if (rows.length === 0) {
-            return res.status(404).json({
-                erro: "Cliente não encontrada"
-            });
+            return res.status(404).json({ erro: "Cliente não encontrada" });
         }
 
         await pool.query("DELETE FROM clientes WHERE id = ?", [id]);
 
-        res.json({
-            mensagem: "Cliente removida com sucesso"
-        });
+        res.json({ mensagem: "Cliente removida com sucesso" });
     } catch (error) {
         res.status(500).json({
             erro: "Erro ao remover cliente",
