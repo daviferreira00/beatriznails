@@ -7,12 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#f7f2f5] min-h-screen">
+
 <div id="sidebar"></div>
 
 <div class="min-h-screen md:ml-72">
     <header class="bg-white/95 border-b border-[#eadde5] px-4 md:px-8 py-4">
         <div class="flex items-center gap-3">
             <button id="openSidebar" class="md:hidden bg-[#b78ea5] text-white px-3 py-2 rounded-xl">☰</button>
+
             <div class="flex items-center gap-3">
                 <img
                         src="/assets/logo-beatriz-beauty.jpg"
@@ -21,7 +23,7 @@
                 />
                 <div>
                     <h1 class="text-2xl font-semibold text-[#b78ea5]">Aniversariantes</h1>
-                    <p class="text-sm text-[#7d6a75]">Envie mensagens e aumente a fidelização 🎉</p>
+                    <p class="text-sm text-[#7d6a75]">Envie mensagens e fortaleça a fidelização 🎉</p>
                 </div>
             </div>
         </div>
@@ -30,6 +32,7 @@
     <main class="max-w-7xl mx-auto p-4 md:p-8">
         <div id="mensagem" class="hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
 
+        <!-- Filtro -->
         <section class="bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm mb-6">
             <div class="flex flex-col lg:flex-row gap-4 lg:items-end">
                 <div class="flex-1">
@@ -58,12 +61,25 @@
                     </button>
                 </div>
             </div>
+
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Mensagem (modelo)</label>
+                <textarea
+                        id="templateMensagem"
+                        rows="4"
+                        class="w-full rounded-2xl border border-[#e8d9e2] bg-[#fffdfe] px-4 py-3 text-[#3f3138] outline-none resize-none transition focus:border-[#c29ab0] focus:ring-4 focus:ring-[#f3e7ee]"
+                ></textarea>
+                <p class="text-xs text-[#7d6a75] mt-2">
+                    Use <strong>{NOME}</strong> para substituir automaticamente pelo nome da cliente.
+                </p>
+            </div>
         </section>
 
+        <!-- Lista -->
         <section class="bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold text-[#3f3138]">Lista</h2>
-                <span id="contador" class="text-sm text-[#7d6a75]">0 clientes</span>
+                <span id="contador" class="text-sm text-[#7d6a75]">0 cliente(s)</span>
             </div>
 
             <div id="lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -75,24 +91,33 @@
 <script src="/components/auth.js"></script>
 
 <script>
-    const msg = document.getElementById("mensagem");
+    const msgEl = document.getElementById("mensagem");
     const dataEl = document.getElementById("data");
     const btnBuscar = document.getElementById("btnBuscar");
     const btnHoje = document.getElementById("btnHoje");
     const listaEl = document.getElementById("lista");
     const contadorEl = document.getElementById("contador");
+    const templateEl = document.getElementById("templateMensagem");
 
     function show(texto, tipo="erro") {
-        msg.textContent = texto;
-        msg.className = "mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
-        if (tipo === "sucesso") msg.classList.add("bg-green-50","text-green-700","border","border-green-200");
-        else msg.classList.add("bg-red-50","text-red-700","border","border-red-200");
+        msgEl.textContent = texto;
+        msgEl.className = "mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+        if (tipo === "sucesso") msgEl.classList.add("bg-green-50","text-green-700","border","border-green-200");
+        else msgEl.classList.add("bg-red-50","text-red-700","border","border-red-200");
     }
     function hide() {
-        msg.className = "hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center";
+        msgEl.className = "hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center";
     }
 
     function soNumeros(v) { return String(v || "").replace(/\D/g, ""); }
+
+    function setHoje() {
+        const hoje = new Date();
+        const y = hoje.getFullYear();
+        const m = String(hoje.getMonth()+1).padStart(2,"0");
+        const d = String(hoje.getDate()).padStart(2,"0");
+        dataEl.value = `${y}-${m}-${d}`;
+    }
 
     function formatarDataBR(dataISO) {
         if (!dataISO) return "-";
@@ -101,24 +126,16 @@
         return `${day}/${m}/${y}`;
     }
 
-    function mensagemPadrao(nome) {
-        return `Oi, ${nome}! 🎉 A Beatriz Beauty deseja um feliz aniversário! 💅✨
-Hoje você tem um mimo especial no salão. Quer agendar seu horário?`;
+    function mensagemPersonalizada(nome) {
+        const tpl = templateEl.value || "";
+        return tpl.replaceAll("{NOME}", nome);
     }
 
     function linkWhats(nome, telefone) {
         const tel = soNumeros(telefone);
         if (!tel) return "#";
-        const texto = encodeURIComponent(mensagemPadrao(nome));
+        const texto = encodeURIComponent(mensagemPersonalizada(nome));
         return `https://wa.me/55${tel}?text=${texto}`;
-    }
-
-    function setHoje() {
-        const hoje = new Date();
-        const y = hoje.getFullYear();
-        const m = String(hoje.getMonth()+1).padStart(2,"0");
-        const d = String(hoje.getDate()).padStart(2,"0");
-        dataEl.value = `${y}-${m}-${d}`;
     }
 
     function cardCliente(c) {
@@ -149,19 +166,20 @@ Hoje você tem um mimo especial no salão. Quer agendar seu horário?`;
 
           <button
             class="btn-copiar bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-4 py-3 rounded-2xl font-semibold transition"
-            data-msg="${encodeURIComponent(mensagemPadrao(c.nome))}"
+            data-nome="${encodeURIComponent(c.nome)}"
           >
             Copiar mensagem
           </button>
         </div>
       `;
+
         return div;
     }
 
     async function carregar() {
         hide();
         listaEl.innerHTML = `<div class="col-span-full text-[#7d6a75]">Carregando...</div>`;
-        contadorEl.textContent = "0 clientes";
+        contadorEl.textContent = "0 cliente(s)";
 
         const data = dataEl.value;
         if (!data) {
@@ -199,9 +217,10 @@ Hoje você tem um mimo especial no salão. Quer agendar seu horário?`;
 
         document.querySelectorAll(".btn-copiar").forEach(btn => {
             btn.addEventListener("click", async () => {
-                const text = decodeURIComponent(btn.dataset.msg || "");
+                const nome = decodeURIComponent(btn.dataset.nome || "");
+                const texto = mensagemPersonalizada(nome);
                 try {
-                    await navigator.clipboard.writeText(text);
+                    await navigator.clipboard.writeText(texto);
                     show("Mensagem copiada! ✅", "sucesso");
                 } catch {
                     show("Não foi possível copiar automaticamente. Seu navegador pode bloquear.", "erro");
@@ -209,6 +228,11 @@ Hoje você tem um mimo especial no salão. Quer agendar seu horário?`;
             });
         });
     }
+
+    // template padrão
+    templateEl.value =
+        `Oi, {NOME}! 🎉 A Beatriz Beauty deseja um feliz aniversário! 💅✨
+Hoje você tem um mimo especial no salão. Quer agendar seu horário?`;
 
     btnBuscar.addEventListener("click", carregar);
     btnHoje.addEventListener("click", () => { setHoje(); carregar(); });
