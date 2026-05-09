@@ -436,3 +436,30 @@ exports.criarAdmin = async (req, res) => {
         res.status(500).json({ erro: "Erro ao criar agendamento", detalhe: e.message });
     }
 };
+exports.registrarPagamento = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { pago, forma_pagamento } = req.body;
+
+        const formasValidas = ["PENDENTE", "DINHEIRO", "PIX", "DEBITO", "CREDITO"];
+
+        if (typeof pago !== "boolean") {
+            return res.status(400).json({ erro: "Campo 'pago' deve ser true/false" });
+        }
+        if (!forma_pagamento || !formasValidas.includes(forma_pagamento)) {
+            return res.status(400).json({ erro: "Forma de pagamento inválida" });
+        }
+
+        const [rows] = await pool.query("SELECT id FROM agendamentos WHERE id = ?", [id]);
+        if (rows.length === 0) return res.status(404).json({ erro: "Agendamento não encontrado" });
+
+        await pool.query(
+            "UPDATE agendamentos SET pago = ?, forma_pagamento = ?, pago_em = ? WHERE id = ?",
+            [pago ? 1 : 0, forma_pagamento, pago ? new Date() : null, id]
+        );
+
+        res.json({ mensagem: "Pagamento atualizado com sucesso" });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao registrar pagamento", detalhe: error.message });
+    }
+};
