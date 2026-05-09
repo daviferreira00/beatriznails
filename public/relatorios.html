@@ -178,12 +178,13 @@
         const tel = c.telefone || "";
         const ultimo = c.ultimo_agendamento ? String(c.ultimo_agendamento).slice(0,10).split("-").reverse().join("/") : "Nunca agendou";
 
-        const msgWpp = encodeURIComponent(
-            `Oi, ${c.nome}! 💅✨ A Beatriz Beauty está com saudades! ` +
-            `Quer que eu te ajude a marcar um horário essa semana?`
-        );
+        function mensagemInativa(nome) {
+            return `Oi, ${nome}! 💅✨ A Beatriz Beauty está com saudades! Quer que eu te ajude a marcar um horário essa semana? https://bn.hub1.com.br/agendar`;
+        }
 
-        const link = tel ? `https://wa.me/55${soNumeros(tel)}?text=${msgWpp}` : "#";
+        const link = tel
+            ? `https://wa.me/55${soNumeros(tel)}?text=${encodeURIComponent(mensagemInativa(c.nome))}`
+            : "#";
 
         div.innerHTML = `
         <p class="font-semibold text-[#3f3138] break-words">${c.nome}</p>
