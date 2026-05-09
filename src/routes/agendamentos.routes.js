@@ -14,5 +14,6 @@ router.get("/", controller.listar);
 router.patch("/:id/status", controller.atualizarStatus);
 router.patch("/:id/pagamento", controller.registrarPagamento);
 // se tiver outros endpoints admin, coloca aqui
+router.post("/", controller.criarAdmin);
 
 module.exports = router;

@@ -349,3 +349,90 @@ exports.criarAgendamentoPublico = async (req, res) => {
         });
     }
 };
+
+// cria agendamento pelo painel (ADMIN)
+exports.criarAdmin = async (req, res) => {
+    try {
+        const {
+            cliente_id,
+            telefone,
+            nome,
+            email,
+            servico_id,
+            servico_id_2,
+            data_agendamento,
+            hora_agendamento,
+            observacoes
+        } = req.body;
+
+        if (!servico_id || !data_agendamento || !hora_agendamento) {
+            return res.status(400).json({ erro: "Serviço, data e horário são obrigatórios" });
+        }
+
+        // localizar/criar cliente
+        const telLimpo = String(telefone || "").replace(/\D/g, "");
+        let clienteId = cliente_id ? Number(cliente_id) : null;
+
+        if (!clienteId) {
+            if (!telLimpo) return res.status(400).json({ erro: "Informe telefone ou cliente_id" });
+
+            const [cRows] = await pool.query(
+                "SELECT id FROM clientes WHERE telefone = ? LIMIT 1",
+                [telLimpo]
+            );
+
+            if (cRows.length > 0) {
+                clienteId = cRows[0].id;
+            } else {
+                if (!nome) return res.status(400).json({ erro: "Cliente não encontrado. Informe o nome para cadastrar." });
+
+                const [ins] = await pool.query(
+                    "INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)",
+                    [nome, telLimpo, email || null]
+                );
+                clienteId = ins.insertId;
+            }
+        }
+
+        // validar conflito de horário (AGENDADO/CONFIRMADO)
+        const [conf] = await pool.query(
+            `SELECT id FROM agendamentos
+       WHERE data_agendamento = ?
+         AND hora_agendamento = ?
+         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+            [data_agendamento, hora_agendamento]
+        );
+        if (conf.length > 0) {
+            return res.status(400).json({ erro: "Esse horário já está ocupado" });
+        }
+
+        // normalizar serviço 2
+        const s1 = Number(servico_id);
+        let s2 = servico_id_2 ? Number(servico_id_2) : null;
+        if (s2 === s1) s2 = null;
+
+        // buscar valores do(s) serviço(s)
+        const [[serv1]] = await pool.query("SELECT id, valor, nome FROM servicos WHERE id = ?", [s1]);
+        if (!serv1) return res.status(404).json({ erro: "Serviço 1 não encontrado" });
+
+        let valorTotal = Number(serv1.valor || 0);
+
+        if (s2) {
+            const [[serv2]] = await pool.query("SELECT id, valor, nome FROM servicos WHERE id = ?", [s2]);
+            if (!serv2) return res.status(404).json({ erro: "Serviço 2 não encontrado" });
+            valorTotal += Number(serv2.valor || 0);
+        }
+
+        // cria como CONFIRMADO (pois foi pelo salão)
+        const [result] = await pool.query(
+            `INSERT INTO agendamentos
+       (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'CONFIRMADO', 0, 'PENDENTE')`,
+            [clienteId, s1, s2, data_agendamento, hora_agendamento, observacoes || null, valorTotal]
+        );
+
+        res.status(201).json({ mensagem: "Agendamento criado com sucesso", id: result.insertId });
+    } catch (e) {
+        res.status(500).json({ erro: "Erro ao criar agendamento", detalhe: e.message });
+    }
+};
