@@ -11,7 +11,6 @@ function todayISO() {
 function validarDataISO(data) {
     if (!data) return null;
     const s = String(data).slice(0, 10);
-    // valida superficial YYYY-MM-DD
     if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
     return s;
 }
@@ -20,13 +19,13 @@ function validarDataISO(data) {
  * =========================
  * RESUMO FINANCEIRO
  * =========================
- * Agora usa pago=1 para receitas (mais correto que status).
+ * Receitas: soma de agendamentos pagos (pago=1)
+ * Materiais(mês): despesas origem='ESTOQUE'
  */
 exports.resumo = async (req, res) => {
     try {
         const hoje = todayISO();
 
-        // Receita total: soma de agendamentos pagos
         const [[receitaTotalRow]] = await pool.query(
             `SELECT COALESCE(SUM(valor_cobrado), 0) AS total_receitas
              FROM agendamentos
@@ -49,7 +48,6 @@ exports.resumo = async (req, res) => {
             [hoje]
         );
 
-        // Despesas
         const [[despesaTotalRow]] = await pool.query(
             `SELECT COALESCE(SUM(valor), 0) AS total_despesas
              FROM despesas`
@@ -69,7 +67,6 @@ exports.resumo = async (req, res) => {
             [hoje]
         );
 
-        // Materiais do mês: apenas origem ESTOQUE (gasto vindo do estoque)
         const [[materiaisMesRow]] = await pool.query(
             `SELECT COALESCE(SUM(valor), 0) AS materiais_mes
              FROM despesas
@@ -80,23 +77,19 @@ exports.resumo = async (req, res) => {
 
         const total_receitas = Number(receitaTotalRow.total_receitas || 0);
         const total_despesas = Number(despesaTotalRow.total_despesas || 0);
-        const lucro_total = total_receitas - total_despesas;
 
         res.json({
             total_receitas,
             total_despesas,
-            lucro_total,
+            lucro_total: total_receitas - total_despesas,
             receitas_hoje: Number(receitaHojeRow.receitas_hoje || 0),
             despesas_hoje: Number(despesaHojeRow.despesas_hoje || 0),
             receitas_mes: Number(receitaMesRow.receitas_mes || 0),
             despesas_mes: Number(despesaMesRow.despesas_mes || 0),
-            materiais_mes: Number(materiaisMesRow.materiais_mes || 0)
+            materiais_mes: Number(materiaisMesRow.materiais_mes || 0),
         });
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao gerar resumo financeiro",
-            detalhe: error.message
-        });
+        res.status(500).json({ erro: "Erro ao gerar resumo financeiro", detalhe: error.message });
     }
 };
 
@@ -105,11 +98,8 @@ exports.resumo = async (req, res) => {
  * FECHAMENTO DO DIA
  * =========================
  * GET /api/financeiro/fechamento?data=YYYY-MM-DD
- *
- * - receitas por forma (PIX/DEBITO/CREDITO/DINHEIRO) usando pago=1
- * - despesas do dia (tabela despesas)
- *
- * OBS: se você tiver pago_em, use ele. Se não tiver, a query tenta usar data+hora do agendamento.
+ * Usa pago=1 agrupado por forma_pagamento + despesas do dia
+ * OBS: se tiver pago_em, melhor. Se não tiver, usa data_agendamento+hora_agendamento.
  */
 exports.fechamentoDia = async (req, res) => {
     try {
@@ -117,27 +107,27 @@ exports.fechamentoDia = async (req, res) => {
 
         const [receitasRows] = await pool.query(
             `SELECT forma_pagamento,
-              COUNT(*) AS qtd,
-              COALESCE(SUM(valor_cobrado),0) AS total
-       FROM agendamentos
-       WHERE pago = 1
-         AND DATE(COALESCE(pago_em, CONCAT(data_agendamento,' ',hora_agendamento))) = ?
-       GROUP BY forma_pagamento`,
+                    COUNT(*) AS qtd,
+                    COALESCE(SUM(valor_cobrado),0) AS total
+             FROM agendamentos
+             WHERE pago = 1
+               AND DATE(COALESCE(pago_em, CONCAT(data_agendamento,' ',hora_agendamento))) = ?
+             GROUP BY forma_pagamento`,
             [data]
         );
 
         const [[despRow]] = await pool.query(
             `SELECT COALESCE(SUM(valor),0) AS total_despesas
-       FROM despesas
-       WHERE data_despesa = ?`,
+             FROM despesas
+             WHERE data_despesa = ?`,
             [data]
         );
 
         const formas = ["PIX", "DEBITO", "CREDITO", "DINHEIRO"];
-        const receitas = Object.fromEntries(formas.map(f => [f, 0]));
-        const qtd_pagamentos = Object.fromEntries(formas.map(f => [f, 0]));
+        const receitas = Object.fromEntries(formas.map((f) => [f, 0]));
+        const qtd_pagamentos = Object.fromEntries(formas.map((f) => [f, 0]));
 
-        receitasRows.forEach(r => {
+        receitasRows.forEach((r) => {
             const f = String(r.forma_pagamento || "").toUpperCase();
             if (receitas[f] !== undefined) {
                 receitas[f] = Number(r.total || 0);
@@ -154,34 +144,28 @@ exports.fechamentoDia = async (req, res) => {
             qtd_pagamentos,
             total_receitas,
             total_despesas,
-            saldo_do_dia: total_receitas - total_despesas
+            saldo_do_dia: total_receitas - total_despesas,
         });
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao gerar fechamento do dia",
-            detalhe: error.message
-        });
+        res.status(500).json({ erro: "Erro ao gerar fechamento do dia", detalhe: error.message });
     }
 };
 
 /**
  * =========================
- * DESPESAS (mantém seu padrão atual)
+ * DESPESAS
  * =========================
  */
 exports.listarDespesas = async (req, res) => {
     try {
         const [rows] = await pool.query(
             `SELECT id, descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem
-       FROM despesas
-       ORDER BY data_despesa DESC, id DESC`
+             FROM despesas
+             ORDER BY data_despesa DESC, id DESC`
         );
         res.json(rows);
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao listar despesas",
-            detalhe: error.message
-        });
+        res.status(500).json({ erro: "Erro ao listar despesas", detalhe: error.message });
     }
 };
 
@@ -190,51 +174,34 @@ exports.criarDespesa = async (req, res) => {
         const { descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem } = req.body;
 
         if (!descricao || !data_despesa) {
-            return res.status(400).json({
-                erro: "Descrição e data da despesa são obrigatórios"
-            });
+            return res.status(400).json({ erro: "Descrição e data da despesa são obrigatórios" });
         }
 
         const qtd = Number(quantidade || 1);
-        if (!Number.isInteger(qtd) || qtd <= 0) {
-            return res.status(400).json({ erro: "Quantidade inválida" });
-        }
+        if (!Number.isFinite(qtd) || qtd <= 0) return res.status(400).json({ erro: "Quantidade inválida" });
 
-        const vUnit = valor_unitario != null && valor_unitario !== ""
-            ? Number(valor_unitario)
-            : null;
+        const vUnit = valor_unitario !== "" && valor_unitario != null ? Number(valor_unitario) : null;
 
         let total;
-        if (vUnit != null && !Number.isNaN(vUnit)) {
-            total = vUnit * qtd;
-        } else {
-            if (valor == null || valor === "") {
-                return res.status(400).json({ erro: "Informe o valor unitário ou o valor total" });
-            }
+        if (vUnit != null && Number.isFinite(vUnit)) total = vUnit * qtd;
+        else {
+            if (valor == null || valor === "") return res.status(400).json({ erro: "Informe valor total ou valor_unitario" });
             total = Number(valor);
         }
 
-        if (Number.isNaN(total) || total < 0) {
-            return res.status(400).json({ erro: "Valor inválido" });
-        }
+        if (!Number.isFinite(total) || total < 0) return res.status(400).json({ erro: "Valor inválido" });
 
         const origemFinal = origem === "ESTOQUE" ? "ESTOQUE" : "MANUAL";
 
         const [result] = await pool.query(
             `INSERT INTO despesas (descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [descricao, categoria || null, total, vUnit, qtd, data_despesa, origemFinal]
         );
 
-        res.status(201).json({
-            mensagem: "Despesa cadastrada com sucesso",
-            id: result.insertId
-        });
+        res.status(201).json({ mensagem: "Despesa cadastrada com sucesso", id: result.insertId });
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao cadastrar despesa",
-            detalhe: error.message
-        });
+        res.status(500).json({ erro: "Erro ao cadastrar despesa", detalhe: error.message });
     }
 };
 
@@ -243,26 +210,19 @@ exports.removerDespesa = async (req, res) => {
         const { id } = req.params;
 
         const [rows] = await pool.query("SELECT id FROM despesas WHERE id = ?", [id]);
-        if (rows.length === 0) {
-            return res.status(404).json({ erro: "Despesa não encontrada" });
-        }
+        if (rows.length === 0) return res.status(404).json({ erro: "Despesa não encontrada" });
 
         await pool.query("DELETE FROM despesas WHERE id = ?", [id]);
-
         res.json({ mensagem: "Despesa removida com sucesso" });
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao remover despesa",
-            detalhe: error.message
-        });
+        res.status(500).json({ erro: "Erro ao remover despesa", detalhe: error.message });
     }
 };
 
 /**
  * =========================
- * ESTOQUE (dentro do Financeiro)
+ * ESTOQUE (dentro do financeiro)
  * =========================
- * Tabelas: estoque_itens / estoque_movimentos
  */
 
 // GET /api/financeiro/estoque/itens
@@ -270,12 +230,47 @@ exports.estoqueListarItens = async (req, res) => {
     try {
         const [rows] = await pool.query(
             `SELECT id, nome, unidade, quantidade_atual, estoque_minimo, custo_medio, ativo
-       FROM estoque_itens
-       ORDER BY nome ASC`
+             FROM estoque_itens
+             ORDER BY nome ASC`
         );
         res.json(rows);
     } catch (error) {
         res.status(500).json({ erro: "Erro ao listar itens do estoque", detalhe: error.message });
+    }
+};
+
+// POST /api/financeiro/estoque/itens  (✅ CADASTRO NO SISTEMA)
+exports.estoqueCriarItem = async (req, res) => {
+    try {
+        const { nome, unidade, estoque_minimo } = req.body;
+
+        if (!nome || !String(nome).trim()) {
+            return res.status(400).json({ erro: "Nome do item é obrigatório" });
+        }
+
+        const un = String(unidade || "UN").trim().toUpperCase();
+        const minimo = Number(estoque_minimo || 0);
+        if (!Number.isFinite(minimo) || minimo < 0) {
+            return res.status(400).json({ erro: "Estoque mínimo inválido" });
+        }
+
+        const nomePadrao = String(nome).trim().toUpperCase();
+
+        // evita duplicados pelo nome
+        const [exist] = await pool.query(`SELECT id FROM estoque_itens WHERE UPPER(nome)=? LIMIT 1`, [nomePadrao]);
+        if (exist.length > 0) {
+            return res.status(400).json({ erro: "Já existe um item com esse nome" });
+        }
+
+        const [result] = await pool.query(
+            `INSERT INTO estoque_itens (nome, unidade, quantidade_atual, estoque_minimo, ativo)
+       VALUES (?, ?, 0, ?, 1)`,
+            [nomePadrao, un, minimo]
+        );
+
+        res.status(201).json({ mensagem: "Item cadastrado com sucesso", id: result.insertId });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao cadastrar item do estoque", detalhe: error.message });
     }
 };
 
@@ -296,6 +291,7 @@ exports.estoqueAlertas = async (req, res) => {
 
 // POST /api/financeiro/estoque/entrada
 // body: { item_id, quantidade, custo_unitario, data_despesa, observacao }
+// ✅ registra entrada + cria despesa automática (origem ESTOQUE)
 exports.estoqueEntrada = async (req, res) => {
     const conn = await pool.getConnection();
     try {
@@ -306,7 +302,7 @@ exports.estoqueEntrada = async (req, res) => {
         const vUnit = Number(custo_unitario);
         const data = validarDataISO(data_despesa);
 
-        if (!idItem || !Number.isFinite(idItem)) return res.status(400).json({ erro: "item_id inválido" });
+        if (!Number.isFinite(idItem) || idItem <= 0) return res.status(400).json({ erro: "item_id inválido" });
         if (!Number.isFinite(qtd) || qtd <= 0) return res.status(400).json({ erro: "quantidade inválida" });
         if (!Number.isFinite(vUnit) || vUnit < 0) return res.status(400).json({ erro: "custo_unitario inválido" });
         if (!data) return res.status(400).json({ erro: "data_despesa inválida (YYYY-MM-DD)" });
@@ -317,8 +313,8 @@ exports.estoqueEntrada = async (req, res) => {
 
         const [[item]] = await conn.query(
             `SELECT id, nome, quantidade_atual, custo_medio
-       FROM estoque_itens
-       WHERE id = ? AND ativo = 1`,
+             FROM estoque_itens
+             WHERE id = ? AND ativo = 1`,
             [idItem]
         );
 
@@ -327,7 +323,7 @@ exports.estoqueEntrada = async (req, res) => {
             return res.status(404).json({ erro: "Item de estoque não encontrado" });
         }
 
-        // Atualiza quantidade e custo médio (média ponderada)
+        // atualiza quantidade e custo médio (média ponderada)
         const qAtual = Number(item.quantidade_atual || 0);
         const custoAtual = item.custo_medio != null ? Number(item.custo_medio) : null;
         const novoQ = qAtual + qtd;
@@ -341,28 +337,28 @@ exports.estoqueEntrada = async (req, res) => {
 
         await conn.query(
             `UPDATE estoque_itens
-       SET quantidade_atual = ?, custo_medio = ?
-       WHERE id = ?`,
+             SET quantidade_atual = ?, custo_medio = ?
+             WHERE id = ?`,
             [novoQ, novoCustoMedio, idItem]
         );
 
-        // Cria despesa automática no financeiro
+        // cria despesa automática
         const descricaoDespesa = `Compra estoque: ${item.nome}`;
         const categoria = "MATERIAIS";
         const origem = "ESTOQUE";
 
         const [despIns] = await conn.query(
             `INSERT INTO despesas (descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [descricaoDespesa, categoria, total, vUnit, qtd, data, origem]
         );
 
         const despesaId = despIns.insertId;
 
-        // Registra movimento de estoque vinculado à despesa
+        // registra movimento de estoque vinculado à despesa
         const [movIns] = await conn.query(
             `INSERT INTO estoque_movimentos (item_id, tipo, quantidade, custo_unitario, total, observacao, despesa_id)
-       VALUES (?, 'ENTRADA', ?, ?, ?, ?, ?)`,
+             VALUES (?, 'ENTRADA', ?, ?, ?, ?, ?)`,
             [idItem, qtd, vUnit, total, observacao || null, despesaId]
         );
 
@@ -371,7 +367,7 @@ exports.estoqueEntrada = async (req, res) => {
         res.status(201).json({
             mensagem: "Entrada registrada e despesa criada no financeiro",
             movimento_id: movIns.insertId,
-            despesa_id: despesaId
+            despesa_id: despesaId,
         });
     } catch (error) {
         try { await conn.rollback(); } catch {}
