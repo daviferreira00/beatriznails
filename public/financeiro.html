@@ -9,7 +9,7 @@
 <body class="bg-[#f7f2f5] min-h-screen">
 <div id="sidebar"></div>
 
-<div class="min-h-screen md:ml-72">
+<div class="min-h-screen md:ml-72 transition-all duration-300">
     <header class="bg-white/95 border-b border-[#eadde5] px-4 md:px-8 py-4">
         <div class="flex items-center gap-3">
             <button id="openSidebar" class="md:hidden bg-[#b78ea5] text-white px-3 py-2 rounded-xl">☰</button>
@@ -22,7 +22,7 @@
                 />
                 <div>
                     <h1 class="text-2xl font-semibold text-[#b78ea5]">Financeiro</h1>
-                    <p class="text-sm text-[#7d6a75]">Controle de receitas e despesas</p>
+                    <p class="text-sm text-[#7d6a75]">Controle de receitas, despesas e estoque</p>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
             <div class="bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
                 <p class="text-sm text-[#7d6a75]">Materiais (mês)</p>
                 <h3 id="materiaisMes" class="text-3xl font-semibold text-[#3f3138] mt-2">--</h3>
-                <p class="text-xs text-[#7d6a75] mt-2">Futuro: virá do Estoque</p>
+                <p class="text-xs text-[#7d6a75] mt-2">Agora vem do estoque (origem ESTOQUE)</p>
             </div>
         </section>
 
@@ -68,7 +68,109 @@
             </div>
         </section>
 
-        <!-- Cadastro de despesa + Lista -->
+        <!-- Fechamento do caixa + Export -->
+        <section class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Fechamento -->
+            <div class="xl:col-span-2 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-[#3f3138]">Fechamento do caixa (dia)</h2>
+                        <p class="text-sm text-[#7d6a75]">Total por forma de pagamento + despesas do dia.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input id="dataFechamento" type="date"
+                               class="w-full sm:w-auto rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                        <button id="btnFechamento"
+                                class="w-full sm:w-auto rounded-2xl bg-[#b78ea5] text-white px-5 py-3 font-semibold hover:bg-[#a97f97] transition">
+                            Conferir
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5">
+                        <p class="text-sm text-[#7d6a75]">PIX</p>
+                        <p id="fech_pix" class="text-2xl font-semibold text-[#3f3138] mt-1">--</p>
+                        <p id="fech_pix_qtd" class="text-xs text-[#7d6a75] mt-1">0 pagamentos</p>
+                    </div>
+
+                    <div class="rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5">
+                        <p class="text-sm text-[#7d6a75]">DÉBITO</p>
+                        <p id="fech_debito" class="text-2xl font-semibold text-[#3f3138] mt-1">--</p>
+                        <p id="fech_debito_qtd" class="text-xs text-[#7d6a75] mt-1">0 pagamentos</p>
+                    </div>
+
+                    <div class="rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5">
+                        <p class="text-sm text-[#7d6a75]">CRÉDITO</p>
+                        <p id="fech_credito" class="text-2xl font-semibold text-[#3f3138] mt-1">--</p>
+                        <p id="fech_credito_qtd" class="text-xs text-[#7d6a75] mt-1">0 pagamentos</p>
+                    </div>
+
+                    <div class="rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5">
+                        <p class="text-sm text-[#7d6a75]">DINHEIRO</p>
+                        <p id="fech_dinheiro" class="text-2xl font-semibold text-[#3f3138] mt-1">--</p>
+                        <p id="fech_dinheiro_qtd" class="text-xs text-[#7d6a75] mt-1">0 pagamentos</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div class="rounded-3xl border border-[#efe4ea] bg-white p-5">
+                        <p class="text-sm text-[#7d6a75]">Total receitas (dia)</p>
+                        <p id="fech_total_receitas" class="text-2xl font-semibold text-[#3f3138] mt-1">--</p>
+                    </div>
+                    <div class="rounded-3xl border border-[#efe4ea] bg-white p-5">
+                        <p class="text-sm text-[#7d6a75]">Total despesas (dia)</p>
+                        <p id="fech_total_despesas" class="text-2xl font-semibold text-[#3f3138] mt-1">--</p>
+                    </div>
+                    <div class="rounded-3xl border border-[#efe4ea] bg-white p-5">
+                        <p class="text-sm text-[#7d6a75]">Saldo do dia</p>
+                        <p id="fech_saldo" class="text-2xl font-semibold text-[#b78ea5] mt-1">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export -->
+            <div class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-[#3f3138] mb-2">Exportação (CSV)</h2>
+                <p class="text-sm text-[#7d6a75] mb-4">Baixe relatórios e abra no Excel/Sheets.</p>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-[#5e4b55] mb-2">De</label>
+                            <input id="expDe" type="date"
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#5e4b55] mb-2">Até</label>
+                            <input id="expAte" type="date"
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none" />
+                        </div>
+                    </div>
+
+                    <button id="btnExpAgend"
+                            class="w-full rounded-2xl bg-[#3f3138] text-white py-3 font-semibold hover:bg-[#2f242a] transition">
+                        Exportar Agendamentos
+                    </button>
+
+                    <button id="btnExpDesp"
+                            class="w-full rounded-2xl bg-[#3f3138] text-white py-3 font-semibold hover:bg-[#2f242a] transition">
+                        Exportar Despesas
+                    </button>
+
+                    <button id="btnExpFech"
+                            class="w-full rounded-2xl bg-[#3f3138] text-white py-3 font-semibold hover:bg-[#2f242a] transition">
+                        Exportar Fechamento
+                    </button>
+
+                    <p class="text-xs text-[#7d6a75] mt-2">
+                        * Usa /api/relatorios/export/*.csv (admin).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Despesas + Estoque -->
         <section class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
             <!-- Nova despesa -->
             <div class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
@@ -89,7 +191,6 @@
                                placeholder="Ex: MATERIAIS, ALUGUEL, CONTAS..." />
                     </div>
 
-                    <!-- Quantidade + Unitário -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-[#5e4b55] mb-2">Quantidade</label>
@@ -105,7 +206,6 @@
                         </div>
                     </div>
 
-                    <!-- Total -->
                     <div>
                         <label class="block text-sm font-medium text-[#5e4b55] mb-2">Total (R$)</label>
                         <input id="valor" required type="number" step="0.01" min="0"
@@ -141,6 +241,93 @@
                 <div id="listaDespesas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
         </section>
+
+        <!-- Estoque (dentro do financeiro) -->
+        <section class="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Entrada de estoque -->
+            <div class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-[#3f3138] mb-4">Entrada de estoque</h2>
+                <p class="text-sm text-[#7d6a75] mb-4">Registra entrada e cria despesa automática (origem ESTOQUE).</p>
+
+                <form id="formEstoqueEntrada" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Item</label>
+                        <select id="estoque_item" class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 bg-white outline-none"></select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-[#5e4b55] mb-2">Quantidade</label>
+                            <input id="estoque_qtd" type="number" min="0.01" step="0.01" required
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#5e4b55] mb-2">Custo unitário (R$)</label>
+                            <input id="estoque_unit" type="number" min="0" step="0.01" required
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Data da compra</label>
+                        <input id="estoque_data" type="date" required
+                               class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Observação</label>
+                        <input id="estoque_obs" type="text" placeholder="Opcional"
+                               class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none" />
+                    </div>
+
+                    <button type="submit"
+                            class="w-full rounded-2xl bg-[#3f3138] text-white py-3.5 font-semibold hover:bg-[#2f242a] transition">
+                        Registrar entrada + gerar despesa
+                    </button>
+                </form>
+            </div>
+
+            <!-- Alertas + Itens -->
+            <div class="xl:col-span-2 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+                    <div>
+                        <h2 class="text-xl font-semibold text-[#3f3138]">Estoque</h2>
+                        <p class="text-sm text-[#7d6a75]">Alertas de mínimo e lista de itens.</p>
+                    </div>
+                    <button id="btnAtualizarEstoque"
+                            class="bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-4 py-2 rounded-2xl font-medium transition">
+                        Atualizar estoque
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5">
+                        <p class="text-sm text-[#7d6a75]">Itens em baixa</p>
+                        <p id="estoque_alerta_total" class="text-3xl font-semibold text-[#b78ea5] mt-2">--</p>
+                    </div>
+
+                    <div class="rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5">
+                        <p class="text-sm text-[#7d6a75]">Dica</p>
+                        <p class="text-sm text-[#5e4b55] mt-2">
+                            Quando registrar entrada, o sistema cria despesa com origem <strong>ESTOQUE</strong> automaticamente.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#3f3138] mb-3">Alertas</h3>
+                        <div id="estoque_alertas" class="space-y-3"></div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#3f3138] mb-3">Itens</h3>
+                        <div id="estoque_itens" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 </div>
 
@@ -160,10 +347,44 @@
     const listaDespesasEl = document.getElementById("listaDespesas");
     const btnAtualizar = document.getElementById("btnAtualizar");
 
-    // Campos para cálculo automático
+    // Cálculo automático despesa
     const qtdEl = document.getElementById("quantidade");
     const valorUnitEl = document.getElementById("valor_unitario");
     const valorTotalEl = document.getElementById("valor");
+
+    // Fechamento
+    const dataFechamentoEl = document.getElementById("dataFechamento");
+    const btnFechamento = document.getElementById("btnFechamento");
+    const fech_pix = document.getElementById("fech_pix");
+    const fech_debito = document.getElementById("fech_debito");
+    const fech_credito = document.getElementById("fech_credito");
+    const fech_dinheiro = document.getElementById("fech_dinheiro");
+    const fech_pix_qtd = document.getElementById("fech_pix_qtd");
+    const fech_debito_qtd = document.getElementById("fech_debito_qtd");
+    const fech_credito_qtd = document.getElementById("fech_credito_qtd");
+    const fech_dinheiro_qtd = document.getElementById("fech_dinheiro_qtd");
+    const fech_total_receitas = document.getElementById("fech_total_receitas");
+    const fech_total_despesas = document.getElementById("fech_total_despesas");
+    const fech_saldo = document.getElementById("fech_saldo");
+
+    // Export
+    const expDe = document.getElementById("expDe");
+    const expAte = document.getElementById("expAte");
+    const btnExpAgend = document.getElementById("btnExpAgend");
+    const btnExpDesp = document.getElementById("btnExpDesp");
+    const btnExpFech = document.getElementById("btnExpFech");
+
+    // Estoque
+    const formEstoqueEntrada = document.getElementById("formEstoqueEntrada");
+    const estoque_item = document.getElementById("estoque_item");
+    const estoque_qtd = document.getElementById("estoque_qtd");
+    const estoque_unit = document.getElementById("estoque_unit");
+    const estoque_data = document.getElementById("estoque_data");
+    const estoque_obs = document.getElementById("estoque_obs");
+    const btnAtualizarEstoque = document.getElementById("btnAtualizarEstoque");
+    const estoque_alertas = document.getElementById("estoque_alertas");
+    const estoque_itens = document.getElementById("estoque_itens");
+    const estoque_alerta_total = document.getElementById("estoque_alerta_total");
 
     function mostrarMensagem(texto, tipo="erro") {
         mensagemEl.textContent = texto;
@@ -190,16 +411,22 @@
         return `${d}/${m}/${y}`;
     }
 
+    function hojeISO() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,"0");
+        const day = String(d.getDate()).padStart(2,"0");
+        return `${y}-${m}-${day}`;
+    }
+
+    // ===== Despesas (calc total) =====
     function recalcularTotal() {
         const qtd = Number(qtdEl.value || 1);
         const vUnit = valorUnitEl.value === "" ? null : Number(valorUnitEl.value);
-
         if (!Number.isNaN(qtd) && qtd > 0 && vUnit != null && !Number.isNaN(vUnit)) {
-            const total = qtd * vUnit;
-            valorTotalEl.value = total.toFixed(2);
+            valorTotalEl.value = (qtd * vUnit).toFixed(2);
         }
     }
-
     qtdEl.addEventListener("input", recalcularTotal);
     valorUnitEl.addEventListener("input", recalcularTotal);
 
@@ -211,24 +438,24 @@
         const unit = item.valor_unitario != null ? formatarMoeda(item.valor_unitario) : null;
 
         div.innerHTML = `
-        <div class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <p class="font-semibold text-[#3f3138] break-words">${item.descricao}</p>
-            <p class="text-sm text-[#7d6a75] mt-2">📌 ${item.categoria || "Sem categoria"}</p>
-            <p class="text-sm text-[#7d6a75] mt-1">📅 ${formatarDataBR(item.data_despesa)}</p>
-            <p class="text-sm text-[#7d6a75] mt-1">🏷️ Origem: ${item.origem || "MANUAL"}</p>
-            <p class="text-sm text-[#7d6a75] mt-1">📦 Qtd: ${qtd}${unit ? ` • Unit: ${unit}` : ""}</p>
-            <p class="mt-3 font-semibold text-[#b78ea5]">Total: ${formatarMoeda(item.valor)}</p>
-          </div>
-
-          <button
-            class="btn-excluir bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition shrink-0"
-            data-id="${item.id}"
-          >
-            Excluir
-          </button>
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <p class="font-semibold text-[#3f3138] break-words">${item.descricao}</p>
+          <p class="text-sm text-[#7d6a75] mt-2">📌 ${item.categoria || "Sem categoria"}</p>
+          <p class="text-sm text-[#7d6a75] mt-1">📅 ${formatarDataBR(item.data_despesa)}</p>
+          <p class="text-sm text-[#7d6a75] mt-1">🏷️ Origem: ${item.origem || "MANUAL"}</p>
+          <p class="text-sm text-[#7d6a75] mt-1">📦 Qtd: ${qtd}${unit ? ` • Unit: ${unit}` : ""}</p>
+          <p class="mt-3 font-semibold text-[#b78ea5]">Total: ${formatarMoeda(item.valor)}</p>
         </div>
-      `;
+
+        <button
+          class="btn-excluir bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition shrink-0"
+          data-id="${item.id}"
+        >
+          Excluir
+        </button>
+      </div>
+    `;
         return div;
     }
 
@@ -254,10 +481,9 @@
         listaDespesasEl.innerHTML = "";
         if (!Array.isArray(data) || data.length === 0) {
             listaDespesasEl.innerHTML = `
-          <div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">
-            Nenhuma despesa cadastrada ainda.
-          </div>
-        `;
+        <div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">
+          Nenhuma despesa cadastrada ainda.
+        </div>`;
             return;
         }
 
@@ -282,13 +508,9 @@
         });
     }
 
-    function setHojeNoInput() {
-        const el = document.getElementById("data_despesa");
-        const d = new Date();
-        const y = d.getFullYear();
-        const m = String(d.getMonth()+1).padStart(2,"0");
-        const day = String(d.getDate()).padStart(2,"0");
-        el.value = `${y}-${m}-${day}`;
+    function setHojeNoInput(id) {
+        const el = document.getElementById(id);
+        el.value = hojeISO();
     }
 
     formDespesa.addEventListener("submit", async (e) => {
@@ -320,7 +542,7 @@
             mostrarMensagem(data.mensagem || "Despesa cadastrada com sucesso", "sucesso");
             formDespesa.reset();
             document.getElementById("quantidade").value = 1;
-            setHojeNoInput();
+            setHojeNoInput("data_despesa");
             await carregarResumo();
             await carregarDespesas();
         } catch {
@@ -333,16 +555,205 @@
         try {
             await carregarResumo();
             await carregarDespesas();
+            await carregarFechamento();
+            await carregarEstoque();
         } catch (e) {
             mostrarMensagem(e.message || "Erro ao atualizar financeiro");
         }
     });
 
-    (async () => {
+    // ===== Fechamento =====
+    async function carregarFechamento() {
+        const data = dataFechamentoEl.value || hojeISO();
+        const res = await fetch(`/api/financeiro/fechamento?data=${data}`);
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.erro || "Erro ao carregar fechamento");
+
+        fech_pix.textContent = formatarMoeda(json.receitas?.PIX || 0);
+        fech_debito.textContent = formatarMoeda(json.receitas?.DEBITO || 0);
+        fech_credito.textContent = formatarMoeda(json.receitas?.CREDITO || 0);
+        fech_dinheiro.textContent = formatarMoeda(json.receitas?.DINHEIRO || 0);
+
+        fech_pix_qtd.textContent = `${json.qtd_pagamentos?.PIX || 0} pagamentos`;
+        fech_debito_qtd.textContent = `${json.qtd_pagamentos?.DEBITO || 0} pagamentos`;
+        fech_credito_qtd.textContent = `${json.qtd_pagamentos?.CREDITO || 0} pagamentos`;
+        fech_dinheiro_qtd.textContent = `${json.qtd_pagamentos?.DINHEIRO || 0} pagamentos`;
+
+        fech_total_receitas.textContent = formatarMoeda(json.total_receitas || 0);
+        fech_total_despesas.textContent = formatarMoeda(json.total_despesas || 0);
+        fech_saldo.textContent = formatarMoeda(json.saldo_do_dia || 0);
+    }
+
+    btnFechamento.addEventListener("click", async () => {
+        limparMensagem();
         try {
-            setHojeNoInput();
+            await carregarFechamento();
+        } catch (e) {
+            mostrarMensagem(e.message || "Erro ao carregar fechamento");
+        }
+    });
+
+    // ===== Export CSV =====
+    function periodoValido() {
+        const de = expDe.value;
+        const ate = expAte.value;
+        if (!de || !ate) {
+            mostrarMensagem("Informe o período De/Até para exportar.");
+            return null;
+        }
+        return { de, ate };
+    }
+
+    btnExpAgend.addEventListener("click", () => {
+        const p = periodoValido(); if (!p) return;
+        window.open(`/api/relatorios/export/agendamentos.csv?de=${p.de}&ate=${p.ate}`, "_blank");
+    });
+
+    btnExpDesp.addEventListener("click", () => {
+        const p = periodoValido(); if (!p) return;
+        window.open(`/api/relatorios/export/despesas.csv?de=${p.de}&ate=${p.ate}`, "_blank");
+    });
+
+    btnExpFech.addEventListener("click", () => {
+        const p = periodoValido(); if (!p) return;
+        window.open(`/api/relatorios/export/fechamento.csv?de=${p.de}&ate=${p.ate}`, "_blank");
+    });
+
+    // ===== Estoque =====
+    function cardAlerta(item) {
+        const div = document.createElement("div");
+        div.className = "rounded-2xl border border-[#efe4ea] bg-[#fcfafb] p-4";
+        div.innerHTML = `
+      <p class="font-semibold text-[#3f3138] break-words">${item.nome}</p>
+      <p class="text-sm text-[#7d6a75] mt-1">Atual: <strong>${item.quantidade_atual}</strong> ${item.unidade || "UN"} • Mín: <strong>${item.estoque_minimo}</strong></p>
+    `;
+        return div;
+    }
+
+    function cardItem(item) {
+        const div = document.createElement("div");
+        div.className = "rounded-2xl border border-[#efe4ea] bg-white p-4";
+        div.innerHTML = `
+      <p class="font-semibold text-[#3f3138] break-words">${item.nome}</p>
+      <p class="text-sm text-[#7d6a75] mt-1">Qtd: <strong>${item.quantidade_atual}</strong> ${item.unidade || "UN"}</p>
+      <p class="text-xs text-[#7d6a75] mt-1">Mín: ${item.estoque_minimo} • Custo médio: ${item.custo_medio != null ? formatarMoeda(item.custo_medio) : "-"}</p>
+    `;
+        return div;
+    }
+
+    async function carregarEstoque() {
+        // itens
+        const rItens = await fetch("/api/financeiro/estoque/itens");
+        const itens = await rItens.json();
+        if (!rItens.ok) throw new Error(itens.erro || "Erro ao carregar itens do estoque");
+
+        estoque_item.innerHTML = "";
+        if (!Array.isArray(itens) || itens.length === 0) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "Cadastre itens no banco (estoque_itens)";
+            estoque_item.appendChild(opt);
+        } else {
+            const opt0 = document.createElement("option");
+            opt0.value = "";
+            opt0.textContent = "Selecione um item";
+            estoque_item.appendChild(opt0);
+
+            itens.forEach(i => {
+                const opt = document.createElement("option");
+                opt.value = i.id;
+                opt.textContent = `${i.nome} (Atual: ${i.quantidade_atual} ${i.unidade || "UN"})`;
+                estoque_item.appendChild(opt);
+            });
+        }
+
+        estoque_itens.innerHTML = "";
+        (itens || []).slice(0, 20).forEach(i => estoque_itens.appendChild(cardItem(i)));
+
+        // alertas
+        const rAlt = await fetch("/api/financeiro/estoque/alertas");
+        const alertas = await rAlt.json();
+        if (!rAlt.ok) throw new Error(alertas.erro || "Erro ao carregar alertas do estoque");
+
+        estoque_alertas.innerHTML = "";
+        estoque_alerta_total.textContent = String((alertas || []).length);
+
+        if (!Array.isArray(alertas) || alertas.length === 0) {
+            estoque_alertas.innerHTML = `<p class="text-sm text-[#7d6a75]">Nenhum item abaixo do mínimo.</p>`;
+        } else {
+            alertas.slice(0, 10).forEach(a => estoque_alertas.appendChild(cardAlerta(a)));
+        }
+    }
+
+    btnAtualizarEstoque.addEventListener("click", async () => {
+        limparMensagem();
+        try {
+            await carregarEstoque();
             await carregarResumo();
             await carregarDespesas();
+        } catch (e) {
+            mostrarMensagem(e.message || "Erro ao atualizar estoque");
+        }
+    });
+
+    formEstoqueEntrada.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limparMensagem();
+
+        const payload = {
+            item_id: estoque_item.value,
+            quantidade: estoque_qtd.value,
+            custo_unitario: estoque_unit.value,
+            data_despesa: estoque_data.value,
+            observacao: estoque_obs.value.trim()
+        };
+
+        if (!payload.item_id) return mostrarMensagem("Selecione um item de estoque.");
+        if (!payload.quantidade || Number(payload.quantidade) <= 0) return mostrarMensagem("Quantidade inválida.");
+        if (payload.custo_unitario === "" || Number(payload.custo_unitario) < 0) return mostrarMensagem("Custo unitário inválido.");
+        if (!payload.data_despesa) return mostrarMensagem("Informe a data da compra.");
+
+        try {
+            const res = await fetch("/api/financeiro/estoque/entrada", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                mostrarMensagem(data.erro || "Erro ao registrar entrada no estoque");
+                return;
+            }
+
+            mostrarMensagem(data.mensagem || "Entrada registrada com sucesso", "sucesso");
+            formEstoqueEntrada.reset();
+            setHojeNoInput("estoque_data");
+
+            await carregarEstoque();
+            await carregarResumo();
+            await carregarDespesas();
+        } catch {
+            mostrarMensagem("Erro ao conectar com o servidor");
+        }
+    });
+
+    (async () => {
+        try {
+            setHojeNoInput("data_despesa");
+            setHojeNoInput("dataFechamento");
+            setHojeNoInput("estoque_data");
+
+            // período export default = mês atual
+            const h = new Date();
+            const y = h.getFullYear();
+            const m = String(h.getMonth()+1).padStart(2,"0");
+            expDe.value = `${y}-${m}-01`;
+            expAte.value = hojeISO();
+
+            await carregarResumo();
+            await carregarDespesas();
+            await carregarFechamento();
+            await carregarEstoque();
         } catch (e) {
             mostrarMensagem(e.message || "Erro ao carregar financeiro");
         }
