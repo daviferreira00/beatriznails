@@ -144,7 +144,7 @@
                             <button
                                     type="button"
                                     id="buscarHorarios"
-                                    class="bg-[#b78ea5] hover:bg-[#a97f97] text-white px-5 py-3 rounded-2xl font-semibold transition shadow-md"
+                                    class="bg-[#b78ea5] hover:bg-[#a97f97] text-white px-5 py-3 rounded-2xl font-semibold transition shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 Buscar horários
                             </button>
@@ -157,8 +157,9 @@
 
                     <div class="md:col-span-2">
                         <button
+                                id="btnConfirmar"
                                 type="submit"
-                                class="w-full rounded-2xl bg-[#b78ea5] px-4 py-3.5 text-white font-semibold shadow-md transition hover:bg-[#a97f97]"
+                                class="w-full rounded-2xl bg-[#b78ea5] px-4 py-3.5 text-white font-semibold shadow-md transition hover:bg-[#a97f97] disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             Confirmar agendamento
                         </button>
@@ -200,6 +201,7 @@
     const mensagem = document.getElementById("mensagem");
     const form = document.getElementById("agendamentoForm");
     const whatsappBtn = document.getElementById("whatsappBtn");
+    const btnConfirmar = document.getElementById("btnConfirmar");
 
     const WHATSAPP_NUMERO = "5583999055896";
 
@@ -243,6 +245,36 @@
         whatsappBtn.classList.remove("hidden");
     }
 
+    // ===== Spinner / Loading =====
+    function spinnerSVG() {
+        return `
+      <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+    `;
+    }
+
+    function setLoading(btn, isLoading, textoLoading) {
+        if (!btn) return;
+
+        if (isLoading) {
+            if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
+            btn.innerHTML = `
+        <span class="inline-flex items-center justify-center gap-2">
+          ${spinnerSVG()}
+          <span>${textoLoading}</span>
+        </span>
+      `;
+            btn.disabled = true;
+            btn.classList.add("opacity-70", "cursor-not-allowed");
+        } else {
+            btn.innerHTML = btn.dataset.originalHtml || btn.innerHTML;
+            btn.disabled = false;
+            btn.classList.remove("opacity-70", "cursor-not-allowed");
+        }
+    }
+
     // Trava apenas NOME e EMAIL. O telefone continua editável.
     function travarCamposCliente(travar) {
         nomeInput.readOnly = travar;
@@ -262,14 +294,13 @@
         travarCamposCliente(false);
     }
 
-    // Evento disparado quando o usuário sai do campo de telefone
+    // Busca cliente ao sair do campo (blur)
     telefoneInput.addEventListener("blur", async () => {
         limparMensagem();
         esconderWhatsapp();
 
         const telefoneBusca = limparTelefone(telefoneInput.value);
 
-        // Se estiver vazio ou muito curto, apenas limpa os dados sem avisar erros
         if (!telefoneBusca || telefoneBusca.length < 10) {
             limparDadosCliente();
             return;
@@ -285,12 +316,10 @@
                 travarCamposCliente(true);
                 mostrarMensagem("Cadastro encontrado! Dados preenchidos automaticamente.", "sucesso");
             } else {
-                // Se não achou (ex: erro 404), limpa os campos para o usuário continuar a vida normalmente
                 limparDadosCliente();
             }
-        } catch (error) {
+        } catch {
             limparDadosCliente();
-            // Erros de rede ignorados silenciosamente para não travar a experiência do novo usuário
         }
     });
 
@@ -376,7 +405,7 @@
             });
 
             aplicarRegrasServicos();
-        } catch (error) {
+        } catch {
             mostrarMensagem("Erro ao carregar os serviços.");
         }
     }
@@ -422,14 +451,14 @@
     }
 
     function gerarLinkWhatsapp({ nome, servicoTexto, data, hora }) {
-        const mensagemWhatsapp =
-            `Olá! Meu nome é ${nome}. Acabei de solicitar um agendamento na Beatriz Beauty.%0A` +
-            `Serviço(s): ${servicoTexto}%0A` +
-            `Data: ${formatarDataBR(data)}%0A` +
-            `Horário: ${hora.slice(0, 5)}%0A` +
+        const texto =
+            `Olá! Meu nome é ${nome}. Acabei de solicitar um agendamento na Beatriz Beauty.\n` +
+            `Serviço(s): ${servicoTexto}\n` +
+            `Data: ${formatarDataBR(data)}\n` +
+            `Horário: ${hora.slice(0, 5)}\n` +
             `Poderia confirmar meu horário, por favor?`;
 
-        return `https://wa.me/${WHATSAPP_NUMERO}?text=${mensagemWhatsapp}`;
+        return `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(texto)}`;
     }
 
     buscarHorariosBtn.addEventListener("click", async () => {
@@ -446,6 +475,8 @@
         }
 
         if (!validarDataSelecionada()) return;
+
+        setLoading(buscarHorariosBtn, true, "Buscando...");
 
         try {
             const response = await fetch(`/api/agendamentos/disponiveis?data=${data}`);
@@ -464,8 +495,10 @@
             horarios.forEach((horario) => {
                 horariosDiv.appendChild(criarBotaoHorario(horario));
             });
-        } catch (error) {
+        } catch {
             mostrarMensagem("Erro ao buscar horários disponíveis.");
+        } finally {
+            setLoading(buscarHorariosBtn, false, "Buscar horários");
         }
     });
 
@@ -509,6 +542,8 @@
             mostrarMensagem("Ao escolher Aplicação, é permitido selecionar apenas 1 serviço.");
             return;
         }
+
+        setLoading(btnConfirmar, true, "Enviando...");
 
         try {
             const response = await fetch("/api/agendamentos/publico", {
@@ -555,8 +590,10 @@
             } else {
                 mostrarMensagem(data.erro || "Não foi possível concluir o agendamento.");
             }
-        } catch (error) {
+        } catch {
             mostrarMensagem("Erro ao conectar com o servidor.");
+        } finally {
+            setLoading(btnConfirmar, false, "Confirmar agendamento");
         }
     });
 
