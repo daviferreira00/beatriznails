@@ -265,7 +265,6 @@
           <p class="text-sm text-[#5e4b55] mt-1">${agendamento.observacoes || "Sem observações"}</p>
         </div>
 
-        <!-- Painel escondido -->
         <div class="pagamento-panel hidden rounded-3xl border border-[#eadde5] bg-white p-4">
           <div class="flex items-center justify-between gap-3 mb-3">
             <p class="font-semibold text-[#3f3138]">Pagamento</p>
@@ -290,7 +289,6 @@
             </div>
           </div>
 
-          <!-- Desconto -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
             <div class="rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
               <p class="text-xs text-[#7d6a75] mb-2">Tipo de desconto</p>
@@ -350,7 +348,6 @@
       </div>
     `;
 
-        // Atualiza preview do total final ao mexer no desconto (dentro do card)
         setTimeout(() => {
             const panel = card.querySelector(".pagamento-panel");
             if (!panel) return;
@@ -416,7 +413,6 @@
                 listaAgendamentos.appendChild(criarCardAgendamento(agendamento));
             });
 
-            // clicar no card abre/fecha painel (sem disparar ao clicar nos inputs/botões)
             document.querySelectorAll("#listaAgendamentos > div[data-id]").forEach(card => {
                 card.addEventListener("click", (e) => {
                     const tag = (e.target.tagName || "").toLowerCase();
@@ -433,7 +429,6 @@
                 });
             });
 
-            // status
             document.querySelectorAll(".btn-status").forEach((btn) => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -441,7 +436,6 @@
                 });
             });
 
-            // salvar pagamento (com desconto)
             document.querySelectorAll(".btn-salvar-pagamento").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
