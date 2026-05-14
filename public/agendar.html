@@ -378,7 +378,7 @@
             servico1Select.innerHTML = '<option value="">Selecione um serviço</option>';
             servico2Select.innerHTML = '<option value="">Nenhum</option>';
 
-            const response = await fetch("/api/servicos");
+            const response = await fetch("/api/servicos/ativos")
             const servicos = await response.json();
 
             if (!response.ok) throw new Error();
