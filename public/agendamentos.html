@@ -10,7 +10,7 @@
 
 <div id="sidebar"></div>
 
-<div class="min-h-screen md:ml-72 transition-all duration-300">
+<div class="min-h-screen md:ml-72">
     <header class="bg-white/95 border-b border-[#eadde5] px-4 md:px-8 py-4">
         <div class="flex items-center gap-3">
             <button id="openSidebar" class="md:hidden bg-[#b78ea5] text-white px-3 py-2 rounded-xl">☰</button>
@@ -30,182 +30,52 @@
     </header>
 
     <main class="max-w-7xl mx-auto p-4 md:p-8">
-        <div id="mensagem" class="hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
+        <section class="bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-[#3f3138]">Lista de agendamentos</h2>
+                    <p class="text-sm text-[#7d6a75]">Filtre por status e data para organizar a agenda.</p>
+                </div>
 
-            <!-- COLUNA ESQUERDA -->
-            <section class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
-                <h2 class="text-xl font-semibold text-[#3f3138] mb-4">Filtros</h2>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <select
+                            id="filtroStatus"
+                            class="rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition bg-white"
+                    >
+                        <option value="">Todos os status</option>
+                        <option value="AGENDADO">Agendado</option>
+                        <option value="CONFIRMADO">Confirmado</option>
+                        <option value="REALIZADO">Realizado</option>
+                        <option value="CANCELADO">Cancelado</option>
+                    </select>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Status</label>
-                        <select
-                                id="filtroStatus"
-                                class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition bg-white"
-                        >
-                            <option value="">Todos os status</option>
-                            <option value="AGENDADO">Agendado</option>
-                            <option value="CONFIRMADO">Confirmado</option>
-                            <option value="REALIZADO">Realizado</option>
-                            <option value="CANCELADO">Cancelado</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-[#5e4b55] mb-2">Data</label>
-                        <input
-                                id="filtroData"
-                                type="date"
-                                class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition bg-white"
-                        />
-                    </div>
+                    <input
+                            id="filtroData"
+                            type="date"
+                            class="rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0] transition bg-white"
+                    />
 
                     <button
                             id="atualizarLista"
-                            class="w-full rounded-2xl bg-[#b78ea5] hover:bg-[#a97f97] text-white py-3.5 font-semibold transition"
+                            class="bg-[#b78ea5] hover:bg-[#a97f97] text-white px-5 py-3 rounded-2xl font-semibold transition shadow-md"
                     >
                         Atualizar
                     </button>
 
                     <button
                             id="limparFiltros"
-                            class="w-full rounded-2xl bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] py-3.5 font-semibold transition"
+                            class="bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-5 py-3 rounded-2xl font-semibold transition"
                     >
                         Limpar
                     </button>
-
-                    <button
-                            id="btnNovoAgendamento"
-                            class="w-full rounded-2xl bg-[#3f3138] hover:bg-[#2f242a] text-white py-3.5 font-semibold transition"
-                    >
-                        + Novo agendamento
-                    </button>
-
-                    <p class="text-xs text-[#7d6a75]">
-                        Dica: clique em um card para abrir a área de pagamento.
-                    </p>
-                </div>
-            </section>
-
-            <!-- COLUNA DIREITA -->
-            <section class="xl:col-span-2 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
-                <div class="flex items-center justify-between mb-5">
-                    <div>
-                        <h2 class="text-xl font-semibold text-[#3f3138]">Agendamentos</h2>
-                        <p class="text-sm text-[#7d6a75]">A lista é atualizada com base nos filtros.</p>
-                    </div>
-                    <button
-                            id="btnAtualizarTopo"
-                            class="bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-4 py-2 rounded-2xl font-medium transition"
-                    >
-                        Atualizar
-                    </button>
-                </div>
-
-                <div id="listaAgendamentos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </section>
-        </div>
-
-        <!-- ===================== MODAL NOVO AGENDAMENTO (ADMIN) ===================== -->
-        <div id="modalAgendamento" class="fixed inset-0 z-[60] hidden">
-            <div class="absolute inset-0 bg-black/40" id="modalOverlay"></div>
-
-            <div class="relative mx-auto mt-8 md:mt-12 w-[95%] max-w-2xl">
-                <div class="bg-white rounded-3xl border border-[#eadde5] shadow-2xl overflow-hidden">
-                    <div class="px-6 py-5 border-b border-[#eadde5] flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xl font-semibold text-[#3f3138]">Novo agendamento (Admin)</h3>
-                            <p class="text-sm text-[#7d6a75]">Crie um agendamento para cliente que não conseguiu agendar.</p>
-                        </div>
-                        <button id="fecharModal" class="text-[#7d6a75] hover:text-[#3f3138] text-2xl leading-none">×</button>
-                    </div>
-
-                    <div class="p-6">
-                        <form id="formNovoAgendamento" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Telefone (busca cliente)</label>
-                                <div class="flex flex-col sm:flex-row gap-3">
-                                    <input id="novoTelefone" type="text" placeholder="(83) 9xxxx-xxxx"
-                                           class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                                    <button type="button" id="btnBuscarCliente"
-                                            class="w-full sm:w-auto rounded-2xl bg-[#b78ea5] text-white px-5 py-3 font-semibold hover:bg-[#a97f97] transition">
-                                        Buscar
-                                    </button>
-                                </div>
-                                <p class="text-xs text-[#7d6a75] mt-2">Se não existir, preencha o nome para cadastrar.</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Nome</label>
-                                <input id="novoNome" type="text" placeholder="Nome da cliente"
-                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">E-mail (opcional)</label>
-                                <input id="novoEmail" type="email" placeholder="email@exemplo.com"
-                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Serviço 1</label>
-                                <select id="novoServico1"
-                                        class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 bg-white outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]">
-                                    <option value="">Carregando...</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Serviço 2 (opcional)</label>
-                                <select id="novoServico2"
-                                        class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 bg-white outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]">
-                                    <option value="">Nenhum</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Data</label>
-                                <input id="novoData" type="date"
-                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Horário</label>
-                                <select id="novoHorario"
-                                        class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 bg-white outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]">
-                                    <option value="">Selecione a data primeiro</option>
-                                </select>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Observações</label>
-                                <input id="novoObs" type="text" placeholder="Opcional"
-                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                            </div>
-
-                            <div class="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
-                                <button type="submit"
-                                        class="w-full rounded-2xl bg-[#3f3138] text-white px-5 py-3 font-semibold hover:bg-[#2f242a] transition">
-                                    Criar agendamento
-                                </button>
-                                <button type="button" id="cancelarModal"
-                                        class="w-full rounded-2xl bg-[#f3e7ee] text-[#b78ea5] px-5 py-3 font-semibold hover:bg-[#eddce6] transition">
-                                    Cancelar
-                                </button>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <div id="msgModal" class="hidden rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
-        </div>
-        <!-- ===================== /MODAL ===================== -->
 
+            <div id="mensagem" class="hidden mb-5 rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
+
+            <div id="listaAgendamentos" class="grid grid-cols-1 xl:grid-cols-2 gap-4"></div>
+        </section>
     </main>
 </div>
 
@@ -216,31 +86,44 @@
     const listaAgendamentos = document.getElementById("listaAgendamentos");
     const mensagem = document.getElementById("mensagem");
     const atualizarListaBtn = document.getElementById("atualizarLista");
-    const btnAtualizarTopo = document.getElementById("btnAtualizarTopo");
     const filtroStatus = document.getElementById("filtroStatus");
     const filtroData = document.getElementById("filtroData");
     const limparFiltrosBtn = document.getElementById("limparFiltros");
 
     function mostrarMensagem(texto, tipo = "erro") {
         mensagem.textContent = texto;
-        mensagem.className = "mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
-        if (tipo === "sucesso") mensagem.classList.add("bg-green-50","text-green-700","border","border-green-200");
-        else mensagem.classList.add("bg-red-50","text-red-700","border","border-red-200");
-    }
-    function limparMensagem() {
-        mensagem.textContent = "";
-        mensagem.className = "hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center";
+        mensagem.className = "mb-5 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
+        if (tipo === "sucesso") {
+            mensagem.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
+        } else {
+            mensagem.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
+        }
     }
 
-    function formatarHora(hora) { return hora ? String(hora).slice(0, 5) : "-"; }
-    function formatarMoeda(valor) { return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+    function limparMensagem() {
+        mensagem.textContent = "";
+        mensagem.className = "hidden mb-5 rounded-2xl px-4 py-3 text-sm font-medium text-center";
+    }
+
+    function formatarHora(hora) {
+        return hora ? String(hora).slice(0, 5) : "-";
+    }
+
+    function formatarMoeda(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
     function formatarData(dataISO) {
         if (!dataISO) return "-";
         const d = String(dataISO).slice(0, 10);
         const [y, m, day] = d.split("-");
         return `${day}/${m}/${y}`;
     }
-    function normalizarData(dataISO) { return dataISO ? String(dataISO).slice(0, 10) : ""; }
+
+    function normalizarData(dataISO) {
+        if (!dataISO) return "";
+        return String(dataISO).slice(0, 10);
+    }
 
     function corStatus(status) {
         const mapa = {
@@ -253,8 +136,31 @@
     }
 
     function textoPagamento(agendamento) {
-        const forma = (agendamento.forma_pagamento || "PENDENTE");
-        return agendamento.pago ? `Pago • ${forma}` : `Pendente • ${forma}`;
+        const forma = agendamento.forma_pagamento || "PENDENTE";
+
+        if (agendamento.pago) {
+            const base = Number(agendamento.valor_cobrado || agendamento.valor_servico || 0);
+            const final = (agendamento.valor_final != null) ? Number(agendamento.valor_final) : base;
+            const temDesc = (agendamento.desconto_tipo && agendamento.desconto_valor != null);
+
+            return temDesc
+                ? `Pago • ${forma} • ${formatarMoeda(final)} (c/ desconto)`
+                : `Pago • ${forma}`;
+        }
+
+        return `Pendente • ${forma}`;
+    }
+
+    function calcularValorFinal(base, tipo, valor) {
+        const b = Number(base || 0);
+        if (!tipo) return b;
+
+        const v = (valor === "" || valor == null) ? null : Number(valor);
+        if (v == null || Number.isNaN(v) || v < 0) return b;
+
+        if (tipo === "VALOR") return Math.max(0, b - v);
+        if (tipo === "PERCENT") return Math.max(0, b - (b * (v / 100)));
+        return b;
     }
 
     async function atualizarStatus(id, status) {
@@ -264,7 +170,9 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status })
             });
+
             const data = await response.json();
+
             if (response.ok) {
                 mostrarMensagem(data.mensagem || "Status atualizado com sucesso", "sucesso");
                 carregarAgendamentos();
@@ -276,14 +184,16 @@
         }
     }
 
-    async function atualizarPagamento(id, pago, forma_pagamento) {
+    async function atualizarPagamento(id, pago, forma_pagamento, desconto_tipo, desconto_valor) {
         try {
             const response = await fetch(`/api/agendamentos/${id}/pagamento`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ pago, forma_pagamento })
+                body: JSON.stringify({ pago, forma_pagamento, desconto_tipo, desconto_valor })
             });
+
             const data = await response.json();
+
             if (response.ok) {
                 mostrarMensagem(data.mensagem || "Pagamento atualizado com sucesso", "sucesso");
                 carregarAgendamentos();
@@ -300,18 +210,27 @@
         card.className = "rounded-3xl border border-[#efe4ea] bg-[#fcfafb] p-5 cursor-pointer";
         card.dataset.id = agendamento.id;
 
+        const baseValor = Number(agendamento.valor_cobrado || agendamento.valor_servico || 0);
+        const valorMostrar = (agendamento.valor_final != null)
+            ? Number(agendamento.valor_final)
+            : baseValor;
+
         const pagoChecked = agendamento.pago ? "checked" : "";
         const formaAtual = String(agendamento.forma_pagamento || "PENDENTE").toUpperCase();
 
+        const descTipoAtual = (agendamento.desconto_tipo || "");
+        const descValorAtual = (agendamento.desconto_valor != null ? Number(agendamento.desconto_valor) : "");
+
         card.innerHTML = `
       <div class="flex flex-col gap-4">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <h3 class="text-lg font-semibold text-[#3f3138] break-words">${agendamento.cliente || "Cliente não informado"}</h3>
-            <p class="text-sm text-[#7d6a75] mt-1 break-words">📞 ${agendamento.telefone || "Não informado"}</p>
-            <p class="text-sm text-[#7d6a75] mt-1 break-words">💅 ${agendamento.servico || "Serviço não informado"}</p>
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-semibold text-[#3f3138]">${agendamento.cliente || "Cliente não informado"}</h3>
+            <p class="text-sm text-[#7d6a75] mt-1">📞 ${agendamento.telefone || "Não informado"}</p>
+            <p class="text-sm text-[#7d6a75] mt-1">💅 ${agendamento.servico || "Serviço não informado"}</p>
           </div>
-          <span class="shrink-0 inline-flex items-center justify-center px-3 py-1 rounded-2xl text-xs font-semibold ${corStatus(agendamento.status)}">
+
+          <span class="inline-flex items-center justify-center px-3 py-1 rounded-2xl text-xs font-semibold ${corStatus(agendamento.status)}">
             ${agendamento.status}
           </span>
         </div>
@@ -321,14 +240,20 @@
             <p class="text-[#7d6a75]">Data</p>
             <p class="font-semibold text-[#3f3138]">${formatarData(agendamento.data_agendamento)}</p>
           </div>
+
           <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
             <p class="text-[#7d6a75]">Horário</p>
             <p class="font-semibold text-[#3f3138]">${formatarHora(agendamento.hora_agendamento)}</p>
           </div>
+
           <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
             <p class="text-[#7d6a75]">Valor</p>
-            <p class="font-semibold text-[#3f3138]">${formatarMoeda(agendamento.valor_cobrado || agendamento.valor_servico)}</p>
+            <p class="font-semibold text-[#3f3138]">${formatarMoeda(valorMostrar)}</p>
+            ${(agendamento.valor_final != null && valorMostrar !== baseValor)
+            ? `<p class="text-xs text-[#7d6a75] mt-1">Base: ${formatarMoeda(baseValor)}</p>`
+            : ``}
           </div>
+
           <div class="rounded-2xl bg-white px-4 py-3 border border-[#f0e7ec]">
             <p class="text-[#7d6a75]">Pagamento</p>
             <p class="font-semibold text-[#3f3138]">${textoPagamento(agendamento)}</p>
@@ -337,9 +262,10 @@
 
         <div>
           <p class="text-sm text-[#7d6a75]">Observações</p>
-          <p class="text-sm text-[#5e4b55] mt-1 break-words">${agendamento.observacoes || "Sem observações"}</p>
+          <p class="text-sm text-[#5e4b55] mt-1">${agendamento.observacoes || "Sem observações"}</p>
         </div>
 
+        <!-- Painel escondido -->
         <div class="pagamento-panel hidden rounded-3xl border border-[#eadde5] bg-white p-4">
           <div class="flex items-center justify-between gap-3 mb-3">
             <p class="font-semibold text-[#3f3138]">Pagamento</p>
@@ -364,34 +290,94 @@
             </div>
           </div>
 
-          <button type="button"
+          <!-- Desconto -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+            <div class="rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
+              <p class="text-xs text-[#7d6a75] mb-2">Tipo de desconto</p>
+              <select class="sel-desc-tipo w-full rounded-xl border border-[#e8d9e2] px-3 py-2 bg-white outline-none">
+                <option value="" ${descTipoAtual==="" ? "selected":""}>Sem desconto</option>
+                <option value="VALOR" ${descTipoAtual==="VALOR" ? "selected":""}>R$</option>
+                <option value="PERCENT" ${descTipoAtual==="PERCENT" ? "selected":""}>%</option>
+              </select>
+            </div>
+
+            <div class="rounded-2xl border border-[#f0e7ec] bg-[#fcfafb] px-4 py-3">
+              <p class="text-xs text-[#7d6a75] mb-2">Valor do desconto</p>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                class="inp-desc-valor w-full rounded-xl border border-[#e8d9e2] px-3 py-2 bg-white outline-none"
+                placeholder="0"
+                value="${descValorAtual}"
+              />
+              <p class="text-[11px] text-[#7d6a75] mt-1">Base: ${formatarMoeda(baseValor)}</p>
+            </div>
+          </div>
+
+          <div class="mt-3 rounded-2xl border border-[#f0e7ec] bg-white px-4 py-3 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[#7d6a75]">Total final</span>
+              <strong class="lbl-total-final text-[#3f3138]">${formatarMoeda(valorMostrar)}</strong>
+            </div>
+          </div>
+
+          <button
+            type="button"
             class="btn-salvar-pagamento mt-3 w-full rounded-2xl bg-[#b78ea5] hover:bg-[#a97f97] text-white px-4 py-3 font-semibold transition"
-            data-id="${agendamento.id}">
+            data-id="${agendamento.id}"
+          >
             Salvar pagamento
           </button>
         </div>
 
-        <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 border-t border-[#f0e7ec]">
-          <button type="button"
-            class="btn-status w-full sm:w-auto bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-2xl font-medium transition"
-            data-id="${agendamento.id}" data-status="CONFIRMADO">
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-[#f0e7ec]">
+          <button class="btn-status bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-2xl font-medium transition"
+            data-id="${agendamento.id}" data-status="CONFIRMADO" type="button">
             Confirmar
           </button>
 
-          <button type="button"
-            class="btn-status w-full sm:w-auto bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-2xl font-medium transition"
-            data-id="${agendamento.id}" data-status="REALIZADO">
+          <button class="btn-status bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-2xl font-medium transition"
+            data-id="${agendamento.id}" data-status="REALIZADO" type="button">
             Realizado
           </button>
 
-          <button type="button"
-            class="btn-status w-full sm:w-auto bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-2xl font-medium transition"
-            data-id="${agendamento.id}" data-status="CANCELADO">
+          <button class="btn-status bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-2xl font-medium transition"
+            data-id="${agendamento.id}" data-status="CANCELADO" type="button">
             Cancelar
           </button>
         </div>
       </div>
     `;
+
+        // Atualiza preview do total final ao mexer no desconto (dentro do card)
+        setTimeout(() => {
+            const panel = card.querySelector(".pagamento-panel");
+            if (!panel) return;
+
+            const chkPago = panel.querySelector(".chk-pago");
+            const selTipo = panel.querySelector(".sel-desc-tipo");
+            const inpValor = panel.querySelector(".inp-desc-valor");
+            const lblFinal = panel.querySelector(".lbl-total-final");
+
+            function atualizarPreview() {
+                if (!chkPago.checked) {
+                    lblFinal.textContent = formatarMoeda(baseValor);
+                    return;
+                }
+                const tipo = selTipo.value || null;
+                const v = inpValor.value;
+                const final = calcularValorFinal(baseValor, tipo, v);
+                lblFinal.textContent = formatarMoeda(final);
+            }
+
+            chkPago.addEventListener("change", atualizarPreview);
+            selTipo.addEventListener("change", atualizarPreview);
+            inpValor.addEventListener("input", atualizarPreview);
+
+            atualizarPreview();
+        }, 0);
+
         return card;
     }
 
@@ -402,11 +388,18 @@
         try {
             const response = await fetch("/api/agendamentos");
             const agendamentos = await response.json();
+
             if (!response.ok) throw new Error(agendamentos.erro || "Erro ao listar agendamentos");
 
             let lista = Array.isArray(agendamentos) ? agendamentos : [];
-            if (filtroStatus.value) lista = lista.filter(i => i.status === filtroStatus.value);
-            if (filtroData.value) lista = lista.filter(i => normalizarData(i.data_agendamento) === filtroData.value);
+
+            if (filtroStatus.value) {
+                lista = lista.filter(item => item.status === filtroStatus.value);
+            }
+
+            if (filtroData.value) {
+                lista = lista.filter(item => normalizarData(item.data_agendamento) === filtroData.value);
+            }
 
             listaAgendamentos.innerHTML = "";
 
@@ -414,70 +407,74 @@
                 listaAgendamentos.innerHTML = `
           <div class="col-span-full rounded-3xl border border-dashed border-[#eadde5] p-6 text-center text-[#7d6a75]">
             Nenhum agendamento encontrado.
-          </div>`;
+          </div>
+        `;
                 return;
             }
 
-            lista.forEach(a => listaAgendamentos.appendChild(criarCardAgendamento(a)));
+            lista.forEach((agendamento) => {
+                listaAgendamentos.appendChild(criarCardAgendamento(agendamento));
+            });
 
-            // abrir/fechar painel no clique do card
+            // clicar no card abre/fecha painel (sem disparar ao clicar nos inputs/botões)
             document.querySelectorAll("#listaAgendamentos > div[data-id]").forEach(card => {
                 card.addEventListener("click", (e) => {
                     const tag = (e.target.tagName || "").toLowerCase();
-                    if (["button","select","input","a","option"].includes(tag)) return;
+                    if (["button","select","input","a","option","svg","path","circle"].includes(tag)) return;
 
                     const panel = card.querySelector(".pagamento-panel");
                     if (!panel) return;
 
-                    document.querySelectorAll(".pagamento-panel").forEach(p => { if (p !== panel) p.classList.add("hidden"); });
+                    document.querySelectorAll(".pagamento-panel").forEach(p => {
+                        if (p !== panel) p.classList.add("hidden");
+                    });
+
                     panel.classList.toggle("hidden");
                 });
             });
 
             // status
-            document.querySelectorAll(".btn-status").forEach(btn => {
+            document.querySelectorAll(".btn-status").forEach((btn) => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     atualizarStatus(btn.dataset.id, btn.dataset.status);
                 });
             });
 
-            // salvar pagamento (robusto)
+            // salvar pagamento (com desconto)
             document.querySelectorAll(".btn-salvar-pagamento").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
 
                     const panel = btn.closest(".pagamento-panel");
-                    const card = btn.closest("[data-id]");
-                    const id = btn.dataset.id || card?.dataset.id;
-
-                    if (!panel || !id) {
-                        mostrarMensagem("Não foi possível identificar o agendamento para salvar o pagamento.");
-                        return;
-                    }
+                    const id = btn.dataset.id;
 
                     const chk = panel.querySelector(".chk-pago");
-                    const sel = panel.querySelector(".sel-forma");
+                    const selForma = panel.querySelector(".sel-forma");
+                    const selTipo = panel.querySelector(".sel-desc-tipo");
+                    const inpValor = panel.querySelector(".inp-desc-valor");
 
-                    if (!chk || !sel) {
-                        mostrarMensagem("Campos de pagamento não encontrados. Atualize a página e tente novamente.");
-                        return;
-                    }
+                    const pago = !!chk.checked;
+                    const forma_pagamento = selForma.value;
 
-                    atualizarPagamento(id, !!chk.checked, sel.value);
+                    const desconto_tipo = selTipo.value || null;
+                    const desconto_valor = (inpValor.value === "" ? null : Number(inpValor.value));
+
+                    atualizarPagamento(id, pago, forma_pagamento, desconto_tipo, desconto_valor);
                 });
             });
 
         } catch (error) {
+            console.error(error);
             listaAgendamentos.innerHTML = `
         <div class="col-span-full rounded-3xl border border-red-200 bg-red-50 p-6 text-center text-red-600">
           Erro ao carregar agendamentos.
-        </div>`;
+        </div>
+      `;
         }
     }
 
     atualizarListaBtn.addEventListener("click", carregarAgendamentos);
-    btnAtualizarTopo.addEventListener("click", carregarAgendamentos);
     filtroStatus.addEventListener("change", carregarAgendamentos);
     filtroData.addEventListener("change", carregarAgendamentos);
 
@@ -485,115 +482,6 @@
         filtroStatus.value = "";
         filtroData.value = "";
         carregarAgendamentos();
-    });
-
-    // ===================== MODAL (ADMIN) =====================
-    const btnNovoAgendamento = document.getElementById("btnNovoAgendamento");
-    const modal = document.getElementById("modalAgendamento");
-    const modalOverlay = document.getElementById("modalOverlay");
-    const fecharModalBtn = document.getElementById("fecharModal");
-    const cancelarModalBtn = document.getElementById("cancelarModal");
-
-    const formNovo = document.getElementById("formNovoAgendamento");
-    const msgModal = document.getElementById("msgModal");
-
-    const novoTelefone = document.getElementById("novoTelefone");
-    const novoNome = document.getElementById("novoNome");
-    const novoEmail = document.getElementById("novoEmail");
-    const novoServico1 = document.getElementById("novoServico1");
-    const novoServico2 = document.getElementById("novoServico2");
-    const novoData = document.getElementById("novoData");
-    const novoHorario = document.getElementById("novoHorario");
-    const novoObs = document.getElementById("novoObs");
-    const btnBuscarCliente = document.getElementById("btnBuscarCliente");
-
-    function showModalMsg(texto, tipo="erro"){
-        msgModal.textContent = texto;
-        msgModal.className = "rounded-2xl px-4 py-3 text-sm font-medium text-center block";
-        if(tipo==="sucesso") msgModal.classList.add("bg-green-50","text-green-700","border","border-green-200");
-        else msgModal.classList.add("bg-red-50","text-red-700","border","border-red-200");
-    }
-    function hideModalMsg(){ msgModal.className = "hidden rounded-2xl px-4 py-3 text-sm font-medium text-center"; }
-    function soNumeros(v){ return String(v||"").replace(/\D/g,""); }
-
-    function abrirModal(){ hideModalMsg(); modal.classList.remove("hidden"); setTimeout(()=> novoTelefone?.focus(), 50); }
-    function fecharModal(){ modal.classList.add("hidden"); formNovo.reset(); novoHorario.innerHTML = `<option value="">Selecione a data primeiro</option>`; }
-
-    btnNovoAgendamento?.addEventListener("click", async () => { abrirModal(); await carregarServicosModal(); });
-    modalOverlay?.addEventListener("click", fecharModal);
-    fecharModalBtn?.addEventListener("click", fecharModal);
-    cancelarModalBtn?.addEventListener("click", fecharModal);
-
-    async function carregarServicosModal(){
-        novoServico1.innerHTML = `<option value="">Selecione</option>`;
-        novoServico2.innerHTML = `<option value="">Nenhum</option>`;
-        const r = await fetch("/api/servicos");
-        const servs = await r.json();
-        if(!r.ok){ showModalMsg(servs.erro || "Erro ao carregar serviços"); return; }
-        servs.forEach(s=>{
-            const txt = `${s.nome} - R$ ${Number(s.valor||0).toFixed(2)}`;
-            const o1=document.createElement("option"); o1.value=s.id; o1.textContent=txt; novoServico1.appendChild(o1);
-            const o2=document.createElement("option"); o2.value=s.id; o2.textContent=txt; novoServico2.appendChild(o2);
-        });
-    }
-
-    async function carregarHorariosModal(){
-        novoHorario.innerHTML = `<option value="">Carregando...</option>`;
-        const data = novoData.value;
-        if(!data){ novoHorario.innerHTML = `<option value="">Selecione a data primeiro</option>`; return; }
-        const r = await fetch(`/api/agendamentos/disponiveis?data=${data}`);
-        const horarios = await r.json();
-        if(!r.ok){ showModalMsg(horarios.erro || "Erro ao buscar horários"); novoHorario.innerHTML = `<option value="">—</option>`; return; }
-        novoHorario.innerHTML = `<option value="">Selecione</option>`;
-        horarios.forEach(h=>{
-            const o=document.createElement("option");
-            o.value=h;
-            o.textContent=String(h).slice(0,5);
-            novoHorario.appendChild(o);
-        });
-    }
-
-    novoData?.addEventListener("change", () => { hideModalMsg(); carregarHorariosModal(); });
-
-    btnBuscarCliente?.addEventListener("click", async () => {
-        hideModalMsg();
-        const tel = soNumeros(novoTelefone.value);
-        if(!tel){ showModalMsg("Informe um telefone para buscar."); return; }
-        const r = await fetch(`/api/clientes/telefone/${encodeURIComponent(tel)}`);
-        const data = await r.json();
-        if(r.ok){ novoNome.value = data.nome || ""; novoEmail.value = data.email || ""; showModalMsg("Cliente encontrado ✅", "sucesso"); }
-        else { showModalMsg("Cliente não encontrado. Preencha o nome para cadastrar.", "erro"); }
-    });
-
-    formNovo?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        hideModalMsg();
-
-        const payload = {
-            telefone: soNumeros(novoTelefone.value),
-            nome: novoNome.value.trim(),
-            email: novoEmail.value.trim(),
-            servico_id: novoServico1.value,
-            servico_id_2: novoServico2.value || null,
-            data_agendamento: novoData.value,
-            hora_agendamento: novoHorario.value,
-            observacoes: novoObs.value.trim()
-        };
-
-        if(!payload.telefone) return showModalMsg("Informe o telefone.");
-        if(!payload.servico_id) return showModalMsg("Selecione o Serviço 1.");
-        if(!payload.data_agendamento) return showModalMsg("Selecione a data.");
-        if(!payload.hora_agendamento) return showModalMsg("Selecione o horário.");
-
-        const r = await fetch("/api/agendamentos", {
-            method: "POST",
-            headers: { "Content-Type":"application/json" },
-            body: JSON.stringify(payload)
-        });
-        const data = await r.json();
-
-        if(r.ok){ showModalMsg(data.mensagem || "Agendamento criado ✅", "sucesso"); await carregarAgendamentos(); }
-        else { showModalMsg(data.erro || "Erro ao criar agendamento."); }
     });
 
     carregarAgendamentos();

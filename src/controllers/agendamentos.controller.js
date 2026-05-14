@@ -1,247 +1,401 @@
 const pool = require("../db/connection");
 
-function todayISO() {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
+const HORARIOS_PADRAO = [
+    "08:00:00",
+    "09:00:00",
+    "10:00:00",
+    "11:00:00",
+    "13:00:00",
+    "14:00:00",
+    "15:00:00",
+    "16:00:00",
+    "17:00:00"
+];
+
+function limparTelefone(telefone) {
+    return String(telefone || "").replace(/\D/g, "");
 }
 
-function validarDataISO(data) {
-    if (!data) return null;
-    const s = String(data).slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
-    return s;
+function toNumber(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
 }
 
-/**
- * RESUMO FINANCEIRO
- * Receita agora considera:
- * - pago = 1
- * - soma COALESCE(valor_final, valor_cobrado)  <-- desconto entra aqui
- */
-exports.resumo = async (req, res) => {
+exports.listar = async (req, res) => {
     try {
-        const hoje = todayISO();
+        const [rows] = await pool.query(`
+      SELECT
+        a.id,
+        a.data_agendamento,
+        a.hora_agendamento,
+        a.status,
+        a.observacoes,
+        a.pago,
+        a.forma_pagamento,
+        a.valor_cobrado,
+        a.desconto_tipo,
+        a.desconto_valor,
+        a.valor_final,
+        a.pago_em,
+        a.servico_id,
+        a.servico_id_2,
+        c.id AS cliente_id,
+        c.nome AS cliente,
+        c.telefone,
+        s.id AS servico_id_1,
+        s.nome AS servico,
+        s.valor AS valor_servico,
+        s.duracao_minutos
+      FROM agendamentos a
+      INNER JOIN clientes c ON c.id = a.cliente_id
+      INNER JOIN servicos s ON s.id = a.servico_id
+      ORDER BY a.data_agendamento DESC, a.hora_agendamento DESC
+    `);
 
-        // Receita total (tudo pago)
-        const [[receitaTotalRow]] = await pool.query(
-            `SELECT COALESCE(SUM(COALESCE(valor_final, valor_cobrado)), 0) AS total_receitas
-       FROM agendamentos
-       WHERE pago = 1`
-        );
-
-        // Receita mês
-        const [[receitaMesRow]] = await pool.query(
-            `SELECT COALESCE(SUM(COALESCE(valor_final, valor_cobrado)), 0) AS receitas_mes
-       FROM agendamentos
-       WHERE pago = 1
-         AND YEAR(data_agendamento) = YEAR(CURDATE())
-         AND MONTH(data_agendamento) = MONTH(CURDATE())`
-        );
-
-        // Receita hoje
-        const [[receitaHojeRow]] = await pool.query(
-            `SELECT COALESCE(SUM(COALESCE(valor_final, valor_cobrado)), 0) AS receitas_hoje
-       FROM agendamentos
-       WHERE pago = 1
-         AND data_agendamento = ?`,
-            [hoje]
-        );
-
-        // Despesas
-        const [[despesaTotalRow]] = await pool.query(
-            `SELECT COALESCE(SUM(valor), 0) AS total_despesas
-       FROM despesas`
-        );
-
-        const [[despesaMesRow]] = await pool.query(
-            `SELECT COALESCE(SUM(valor), 0) AS despesas_mes
-       FROM despesas
-       WHERE YEAR(data_despesa) = YEAR(CURDATE())
-         AND MONTH(data_despesa) = MONTH(CURDATE())`
-        );
-
-        const [[despesaHojeRow]] = await pool.query(
-            `SELECT COALESCE(SUM(valor), 0) AS despesas_hoje
-       FROM despesas
-       WHERE data_despesa = ?`,
-            [hoje]
-        );
-
-        // Materiais (mês) - mantém sua regra atual
-        const [[materiaisMesRow]] = await pool.query(
-            `SELECT COALESCE(SUM(valor), 0) AS materiais_mes
-       FROM despesas
-       WHERE YEAR(data_despesa) = YEAR(CURDATE())
-         AND MONTH(data_despesa) = MONTH(CURDATE())
-         AND (origem = 'ESTOQUE' OR categoria LIKE '%MATERIA%')`
-        );
-
-        const total_receitas = Number(receitaTotalRow.total_receitas || 0);
-        const total_despesas = Number(despesaTotalRow.total_despesas || 0);
-
-        res.json({
-            total_receitas,
-            total_despesas,
-            lucro_total: total_receitas - total_despesas,
-            receitas_hoje: Number(receitaHojeRow.receitas_hoje || 0),
-            despesas_hoje: Number(despesaHojeRow.despesas_hoje || 0),
-            receitas_mes: Number(receitaMesRow.receitas_mes || 0),
-            despesas_mes: Number(despesaMesRow.despesas_mes || 0),
-            materiais_mes: Number(materiaisMesRow.materiais_mes || 0),
-        });
-    } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao gerar resumo financeiro",
-            detalhe: error.message,
-        });
-    }
-};
-
-/**
- * FECHAMENTO DO DIA (com desconto)
- * GET /api/financeiro/fechamento?data=YYYY-MM-DD
- *
- * Soma por forma_pagamento usando:
- * COALESCE(valor_final, valor_cobrado)
- */
-exports.fechamentoDia = async (req, res) => {
-    try {
-        const data = validarDataISO(req.query.data) || todayISO();
-
-        const [receitasRows] = await pool.query(
-            `SELECT forma_pagamento,
-              COUNT(*) AS qtd,
-              COALESCE(SUM(COALESCE(valor_final, valor_cobrado)), 0) AS total
-       FROM agendamentos
-       WHERE pago = 1
-         AND DATE(COALESCE(pago_em, CONCAT(data_agendamento,' ',hora_agendamento))) = ?
-       GROUP BY forma_pagamento`,
-            [data]
-        );
-
-        const [[despRow]] = await pool.query(
-            `SELECT COALESCE(SUM(valor), 0) AS total_despesas
-       FROM despesas
-       WHERE data_despesa = ?`,
-            [data]
-        );
-
-        const formas = ["PIX", "DEBITO", "CREDITO", "DINHEIRO"];
-        const receitas = Object.fromEntries(formas.map((f) => [f, 0]));
-        const qtd_pagamentos = Object.fromEntries(formas.map((f) => [f, 0]));
-
-        receitasRows.forEach((r) => {
-            const f = String(r.forma_pagamento || "").toUpperCase();
-            if (receitas[f] !== undefined) {
-                receitas[f] = Number(r.total || 0);
-                qtd_pagamentos[f] = Number(r.qtd || 0);
-            }
-        });
-
-        const total_receitas = formas.reduce((acc, f) => acc + receitas[f], 0);
-        const total_despesas = Number(despRow?.total_despesas || 0);
-
-        res.json({
-            data,
-            receitas,
-            qtd_pagamentos,
-            total_receitas,
-            total_despesas,
-            saldo_do_dia: total_receitas - total_despesas,
-        });
-    } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao gerar fechamento do dia",
-            detalhe: error.message,
-        });
-    }
-};
-
-exports.listarDespesas = async (req, res) => {
-    try {
-        const [rows] = await pool.query(
-            `SELECT id, descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem
-       FROM despesas
-       ORDER BY data_despesa DESC, id DESC`
-        );
         res.json(rows);
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao listar despesas",
-            detalhe: error.message,
-        });
+        res.status(500).json({ erro: "Erro ao listar agendamentos", detalhe: error.message });
     }
 };
 
-exports.criarDespesa = async (req, res) => {
+// (opcional/admin antigo)
+exports.criar = async (req, res) => {
     try {
-        const { descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem } = req.body;
+        const { cliente_id, servico_id, data_agendamento, hora_agendamento, observacoes } = req.body;
 
-        if (!descricao || !data_despesa) {
-            return res.status(400).json({ erro: "Descrição e data da despesa são obrigatórios" });
+        if (!cliente_id || !servico_id || !data_agendamento || !hora_agendamento) {
+            return res.status(400).json({
+                erro: "cliente_id, servico_id, data_agendamento e hora_agendamento são obrigatórios"
+            });
         }
 
-        const qtd = Number(quantidade || 1);
-        if (!Number.isInteger(qtd) || qtd <= 0) {
-            return res.status(400).json({ erro: "Quantidade inválida" });
-        }
+        const [clienteRows] = await pool.query("SELECT id FROM clientes WHERE id = ?", [cliente_id]);
+        if (clienteRows.length === 0) return res.status(404).json({ erro: "Cliente não encontrado" });
 
-        const vUnit = valor_unitario != null && valor_unitario !== "" ? Number(valor_unitario) : null;
+        const [[serv1]] = await pool.query("SELECT id, valor FROM servicos WHERE id = ?", [servico_id]);
+        if (!serv1) return res.status(404).json({ erro: "Serviço não encontrado" });
 
-        // Se vier valor_unitario, calcula total. Senão usa "valor" como total.
-        let total;
-        if (vUnit != null && !Number.isNaN(vUnit)) {
-            total = vUnit * qtd;
-        } else {
-            if (valor == null || valor === "") {
-                return res.status(400).json({ erro: "Informe o valor unitário ou o valor total" });
-            }
-            total = Number(valor);
-        }
+        const [conflito] = await pool.query(
+            `SELECT id
+       FROM agendamentos
+       WHERE data_agendamento = ?
+         AND hora_agendamento = ?
+         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+            [data_agendamento, hora_agendamento]
+        );
+        if (conflito.length > 0) return res.status(400).json({ erro: "Já existe um agendamento para esse horário" });
 
-        if (Number.isNaN(total) || total < 0) {
-            return res.status(400).json({ erro: "Valor inválido" });
-        }
-
-        const origemFinal = origem === "ESTOQUE" ? "ESTOQUE" : "MANUAL";
+        const valorServico = Number(serv1.valor || 0);
 
         const [result] = await pool.query(
-            `INSERT INTO despesas (descricao, categoria, valor, valor_unitario, quantidade, data_despesa, origem)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [descricao, categoria || null, total, vUnit, qtd, data_despesa, origemFinal]
+            `INSERT INTO agendamentos
+       (cliente_id, servico_id, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+       VALUES (?, ?, ?, ?, ?, ?, 'AGENDADO', 0, 'PENDENTE')`,
+            [cliente_id, servico_id, data_agendamento, hora_agendamento, observacoes || null, valorServico]
         );
 
-        res.status(201).json({
-            mensagem: "Despesa cadastrada com sucesso",
-            id: result.insertId,
-        });
+        res.status(201).json({ mensagem: "Agendamento criado com sucesso", id: result.insertId });
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao cadastrar despesa",
-            detalhe: error.message,
-        });
+        res.status(500).json({ erro: "Erro ao criar agendamento", detalhe: error.message });
     }
 };
 
-exports.removerDespesa = async (req, res) => {
+exports.atualizarStatus = async (req, res) => {
     try {
         const { id } = req.params;
+        const { status } = req.body;
 
-        const [rows] = await pool.query("SELECT id FROM despesas WHERE id = ?", [id]);
-        if (rows.length === 0) {
-            return res.status(404).json({ erro: "Despesa não encontrada" });
+        const statusValidos = ["AGENDADO", "CONFIRMADO", "REALIZADO", "CANCELADO"];
+        if (!status || !statusValidos.includes(status)) {
+            return res.status(400).json({ erro: "Status inválido" });
         }
 
-        await pool.query("DELETE FROM despesas WHERE id = ?", [id]);
+        const [rows] = await pool.query("SELECT id FROM agendamentos WHERE id = ?", [id]);
+        if (rows.length === 0) return res.status(404).json({ erro: "Agendamento não encontrado" });
 
-        res.json({ mensagem: "Despesa removida com sucesso" });
+        await pool.query("UPDATE agendamentos SET status = ? WHERE id = ?", [status, id]);
+        res.json({ mensagem: "Status atualizado com sucesso" });
     } catch (error) {
-        res.status(500).json({
-            erro: "Erro ao remover despesa",
-            detalhe: error.message,
+        res.status(500).json({ erro: "Erro ao atualizar status", detalhe: error.message });
+    }
+};
+
+/**
+ * PATCH /api/agendamentos/:id/pagamento
+ * body: { pago:boolean, forma_pagamento:string, desconto_tipo?:'VALOR'|'PERCENT'|null, desconto_valor?:number|null }
+ *
+ * Base do cálculo: valor_cobrado (oficial do agendamento)
+ * Salva: desconto_tipo, desconto_valor, valor_final, pago_em
+ */
+exports.registrarPagamento = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { pago, forma_pagamento, desconto_tipo, desconto_valor } = req.body;
+
+        const formasValidas = ["PENDENTE", "DINHEIRO", "PIX", "DEBITO", "CREDITO"];
+        const forma = String(forma_pagamento || "").toUpperCase();
+
+        if (typeof pago !== "boolean") {
+            return res.status(400).json({ erro: "Campo 'pago' deve ser true/false" });
+        }
+        if (!forma || !formasValidas.includes(forma)) {
+            return res.status(400).json({ erro: "Forma de pagamento inválida" });
+        }
+
+        const [[ag]] = await pool.query(
+            "SELECT id, valor_cobrado FROM agendamentos WHERE id = ?",
+            [id]
+        );
+        if (!ag) return res.status(404).json({ erro: "Agendamento não encontrado" });
+
+        const base = Number(ag.valor_cobrado || 0);
+
+        // desconto (opcional)
+        const tipo = desconto_tipo ? String(desconto_tipo).toUpperCase() : null;
+        const tiposValidos = [null, "VALOR", "PERCENT"];
+        if (!tiposValidos.includes(tipo)) {
+            return res.status(400).json({ erro: "desconto_tipo inválido" });
+        }
+
+        const descNum = (desconto_valor === "" || desconto_valor == null) ? null : toNumber(desconto_valor);
+        if (descNum != null && (descNum < 0)) {
+            return res.status(400).json({ erro: "desconto_valor inválido" });
+        }
+
+        let valorFinal = base;
+        if (pago && tipo && descNum != null) {
+            if (tipo === "VALOR") {
+                valorFinal = base - descNum;
+            } else if (tipo === "PERCENT") {
+                valorFinal = base - (base * (descNum / 100));
+            }
+            if (valorFinal < 0) valorFinal = 0;
+            // arredonda 2 casas
+            valorFinal = Math.round(valorFinal * 100) / 100;
+        }
+
+        await pool.query(
+            `UPDATE agendamentos
+       SET pago = ?,
+           forma_pagamento = ?,
+           pago_em = ?,
+           desconto_tipo = ?,
+           desconto_valor = ?,
+           valor_final = ?
+       WHERE id = ?`,
+            [
+                pago ? 1 : 0,
+                forma,
+                pago ? new Date() : null,
+                pago ? tipo : null,
+                pago ? (descNum ?? null) : null,
+                pago ? valorFinal : null,
+                id
+            ]
+        );
+
+        res.json({
+            mensagem: "Pagamento atualizado com sucesso",
+            valor_base: base,
+            valor_final: pago ? valorFinal : null
         });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao registrar pagamento", detalhe: error.message });
+    }
+};
+
+exports.listarHorariosDisponiveis = async (req, res) => {
+    try {
+        const { data } = req.query;
+        if (!data) return res.status(400).json({ erro: "A data é obrigatória" });
+
+        // ocupados (AGENDADO/CONFIRMADO)
+        const [ocupadosRows] = await pool.query(
+            `SELECT hora_agendamento
+       FROM agendamentos
+       WHERE data_agendamento = ?
+         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+            [data]
+        );
+        const ocupados = ocupadosRows.map(r => String(r.hora_agendamento));
+
+        // bloqueios (proprietária)
+        const [bloqueiosRows] = await pool.query(
+            `SELECT hora_inicio, hora_fim
+       FROM bloqueios_agenda
+       WHERE data_bloqueio = ?`,
+            [data]
+        );
+
+        function estaBloqueado(horario) {
+            return bloqueiosRows.some(b => {
+                const ini = String(b.hora_inicio);
+                const fim = String(b.hora_fim);
+                return (horario >= ini) && (horario < fim);
+            });
+        }
+
+        const disponiveis = HORARIOS_PADRAO.filter(h => !ocupados.includes(h) && !estaBloqueado(h));
+        res.json(disponiveis);
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao listar horários disponíveis", detalhe: error.message });
+    }
+};
+
+exports.criarAgendamentoPublico = async (req, res) => {
+    try {
+        const {
+            nome,
+            telefone,
+            email,
+            servico_id,
+            servico_id_2,
+            data_agendamento,
+            hora_agendamento,
+            observacoes
+        } = req.body;
+
+        if (!servico_id || !data_agendamento || !hora_agendamento) {
+            return res.status(400).json({ erro: "Serviço, data e horário são obrigatórios" });
+        }
+
+        // conflito
+        const [conflito] = await pool.query(
+            `SELECT id
+       FROM agendamentos
+       WHERE data_agendamento = ?
+         AND hora_agendamento = ?
+         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+            [data_agendamento, hora_agendamento]
+        );
+        if (conflito.length > 0) {
+            return res.status(400).json({ erro: "Esse horário acabou de ser ocupado. Escolha outro." });
+        }
+
+        // resolve cliente por telefone ou cria
+        const tel = limparTelefone(telefone);
+        let clienteId = null;
+
+        if (tel) {
+            const [cTel] = await pool.query("SELECT id FROM clientes WHERE telefone = ? LIMIT 1", [tel]);
+            if (cTel.length > 0) clienteId = cTel[0].id;
+        }
+
+        if (!clienteId) {
+            if (!nome || !tel) {
+                return res.status(400).json({ erro: "Para novo cadastro, nome e telefone são obrigatórios" });
+            }
+            const [novoCliente] = await pool.query(
+                "INSERT INTO clientes (nome, telefone, email, observacoes) VALUES (?, ?, ?, ?)",
+                [nome, tel, email || null, null]
+            );
+            clienteId = novoCliente.insertId;
+        }
+
+        // serviços (suporta 2)
+        const s1 = Number(servico_id);
+        let s2 = servico_id_2 ? Number(servico_id_2) : null;
+        if (s2 === s1) s2 = null;
+
+        const [[serv1]] = await pool.query("SELECT id, valor FROM servicos WHERE id = ?", [s1]);
+        if (!serv1) return res.status(404).json({ erro: "Serviço 1 não encontrado" });
+
+        let valorTotal = Number(serv1.valor || 0);
+        if (s2) {
+            const [[serv2]] = await pool.query("SELECT id, valor FROM servicos WHERE id = ?", [s2]);
+            if (!serv2) return res.status(404).json({ erro: "Serviço 2 não encontrado" });
+            valorTotal += Number(serv2.valor || 0);
+        }
+
+        const [result] = await pool.query(
+            `INSERT INTO agendamentos
+       (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'AGENDADO', 0, 'PENDENTE')`,
+            [clienteId, s1, s2, data_agendamento, hora_agendamento, observacoes || null, valorTotal]
+        );
+
+        res.status(201).json({ mensagem: "Agendamento realizado com sucesso!", id: result.insertId });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao criar agendamento público", detalhe: error.message });
+    }
+};
+
+// cria agendamento pelo painel (ADMIN)
+exports.criarAdmin = async (req, res) => {
+    try {
+        const {
+            cliente_id,
+            telefone,
+            nome,
+            email,
+            servico_id,
+            servico_id_2,
+            data_agendamento,
+            hora_agendamento,
+            observacoes
+        } = req.body;
+
+        if (!servico_id || !data_agendamento || !hora_agendamento) {
+            return res.status(400).json({ erro: "Serviço, data e horário são obrigatórios" });
+        }
+
+        // localizar/criar cliente
+        const telLimpo = limparTelefone(telefone);
+        let clienteId = cliente_id ? Number(cliente_id) : null;
+
+        if (!clienteId) {
+            if (!telLimpo) return res.status(400).json({ erro: "Informe telefone ou cliente_id" });
+
+            const [cRows] = await pool.query("SELECT id FROM clientes WHERE telefone = ? LIMIT 1", [telLimpo]);
+            if (cRows.length > 0) {
+                clienteId = cRows[0].id;
+            } else {
+                if (!nome) return res.status(400).json({ erro: "Cliente não encontrado. Informe o nome para cadastrar." });
+
+                const [ins] = await pool.query(
+                    "INSERT INTO clientes (nome, telefone, email) VALUES (?, ?, ?)",
+                    [nome, telLimpo, email || null]
+                );
+                clienteId = ins.insertId;
+            }
+        }
+
+        // conflito
+        const [conf] = await pool.query(
+            `SELECT id FROM agendamentos
+       WHERE data_agendamento = ?
+         AND hora_agendamento = ?
+         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+            [data_agendamento, hora_agendamento]
+        );
+        if (conf.length > 0) return res.status(400).json({ erro: "Esse horário já está ocupado" });
+
+        // serviços (suporta 2)
+        const s1 = Number(servico_id);
+        let s2 = servico_id_2 ? Number(servico_id_2) : null;
+        if (s2 === s1) s2 = null;
+
+        const [[serv1]] = await pool.query("SELECT id, valor FROM servicos WHERE id = ?", [s1]);
+        if (!serv1) return res.status(404).json({ erro: "Serviço 1 não encontrado" });
+
+        let valorTotal = Number(serv1.valor || 0);
+
+        if (s2) {
+            const [[serv2]] = await pool.query("SELECT id, valor FROM servicos WHERE id = ?", [s2]);
+            if (!serv2) return res.status(404).json({ erro: "Serviço 2 não encontrado" });
+            valorTotal += Number(serv2.valor || 0);
+        }
+
+        // cria como CONFIRMADO (feito pelo salão)
+        const [result] = await pool.query(
+            `INSERT INTO agendamentos
+       (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'CONFIRMADO', 0, 'PENDENTE')`,
+            [clienteId, s1, s2, data_agendamento, hora_agendamento, observacoes || null, valorTotal]
+        );
+
+        res.status(201).json({ mensagem: "Agendamento criado com sucesso", id: result.insertId });
+    } catch (e) {
+        res.status(500).json({ erro: "Erro ao criar agendamento", detalhe: e.message });
     }
 };
