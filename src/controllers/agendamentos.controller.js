@@ -24,33 +24,33 @@ function toNumber(v) {
 exports.listar = async (req, res) => {
     try {
         const [rows] = await pool.query(`
-      SELECT
-        a.id,
-        a.data_agendamento,
-        a.hora_agendamento,
-        a.status,
-        a.observacoes,
-        a.pago,
-        a.forma_pagamento,
-        a.valor_cobrado,
-        a.desconto_tipo,
-        a.desconto_valor,
-        a.valor_final,
-        a.pago_em,
-        a.servico_id,
-        a.servico_id_2,
-        c.id AS cliente_id,
-        c.nome AS cliente,
-        c.telefone,
-        s.id AS servico_id_1,
-        s.nome AS servico,
-        s.valor AS valor_servico,
-        s.duracao_minutos
-      FROM agendamentos a
-      INNER JOIN clientes c ON c.id = a.cliente_id
-      INNER JOIN servicos s ON s.id = a.servico_id
-      ORDER BY a.data_agendamento DESC, a.hora_agendamento DESC
-    `);
+            SELECT
+                a.id,
+                a.data_agendamento,
+                a.hora_agendamento,
+                a.status,
+                a.observacoes,
+                a.pago,
+                a.forma_pagamento,
+                a.valor_cobrado,
+                a.desconto_tipo,
+                a.desconto_valor,
+                a.valor_final,
+                a.pago_em,
+                a.servico_id,
+                a.servico_id_2,
+                c.id AS cliente_id,
+                c.nome AS cliente,
+                c.telefone,
+                s.id AS servico_id_1,
+                s.nome AS servico,
+                s.valor AS valor_servico,
+                s.duracao_minutos
+            FROM agendamentos a
+                     INNER JOIN clientes c ON c.id = a.cliente_id
+                     INNER JOIN servicos s ON s.id = a.servico_id
+            ORDER BY a.data_agendamento DESC, a.hora_agendamento DESC
+        `);
 
         res.json(rows);
     } catch (error) {
@@ -77,10 +77,10 @@ exports.criar = async (req, res) => {
 
         const [conflito] = await pool.query(
             `SELECT id
-       FROM agendamentos
-       WHERE data_agendamento = ?
-         AND hora_agendamento = ?
-         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+             FROM agendamentos
+             WHERE data_agendamento = ?
+               AND hora_agendamento = ?
+               AND status IN ('AGENDADO', 'CONFIRMADO')`,
             [data_agendamento, hora_agendamento]
         );
         if (conflito.length > 0) return res.status(400).json({ erro: "Já existe um agendamento para esse horário" });
@@ -89,8 +89,8 @@ exports.criar = async (req, res) => {
 
         const [result] = await pool.query(
             `INSERT INTO agendamentos
-       (cliente_id, servico_id, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
-       VALUES (?, ?, ?, ?, ?, ?, 'AGENDADO', 0, 'PENDENTE')`,
+             (cliente_id, servico_id, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+             VALUES (?, ?, ?, ?, ?, ?, 'AGENDADO', 0, 'PENDENTE')`,
             [cliente_id, servico_id, data_agendamento, hora_agendamento, observacoes || null, valorServico]
         );
 
@@ -176,13 +176,13 @@ exports.registrarPagamento = async (req, res) => {
 
         await pool.query(
             `UPDATE agendamentos
-       SET pago = ?,
-           forma_pagamento = ?,
-           pago_em = ?,
-           desconto_tipo = ?,
-           desconto_valor = ?,
-           valor_final = ?
-       WHERE id = ?`,
+             SET pago = ?,
+                 forma_pagamento = ?,
+                 pago_em = ?,
+                 desconto_tipo = ?,
+                 desconto_valor = ?,
+                 valor_final = ?
+             WHERE id = ?`,
             [
                 pago ? 1 : 0,
                 forma,
@@ -212,9 +212,9 @@ exports.listarHorariosDisponiveis = async (req, res) => {
         // ocupados (AGENDADO/CONFIRMADO)
         const [ocupadosRows] = await pool.query(
             `SELECT hora_agendamento
-       FROM agendamentos
-       WHERE data_agendamento = ?
-         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+             FROM agendamentos
+             WHERE data_agendamento = ?
+               AND status IN ('AGENDADO', 'CONFIRMADO')`,
             [data]
         );
         const ocupados = ocupadosRows.map(r => String(r.hora_agendamento));
@@ -222,8 +222,8 @@ exports.listarHorariosDisponiveis = async (req, res) => {
         // bloqueios (proprietária)
         const [bloqueiosRows] = await pool.query(
             `SELECT hora_inicio, hora_fim
-       FROM bloqueios_agenda
-       WHERE data_bloqueio = ?`,
+             FROM bloqueios_agenda
+             WHERE data_bloqueio = ?`,
             [data]
         );
 
@@ -262,10 +262,10 @@ exports.criarAgendamentoPublico = async (req, res) => {
         // conflito
         const [conflito] = await pool.query(
             `SELECT id
-       FROM agendamentos
-       WHERE data_agendamento = ?
-         AND hora_agendamento = ?
-         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+             FROM agendamentos
+             WHERE data_agendamento = ?
+               AND hora_agendamento = ?
+               AND status IN ('AGENDADO', 'CONFIRMADO')`,
             [data_agendamento, hora_agendamento]
         );
         if (conflito.length > 0) {
@@ -309,8 +309,8 @@ exports.criarAgendamentoPublico = async (req, res) => {
 
         const [result] = await pool.query(
             `INSERT INTO agendamentos
-       (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'AGENDADO', 0, 'PENDENTE')`,
+             (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'AGENDADO', 0, 'PENDENTE')`,
             [clienteId, s1, s2, data_agendamento, hora_agendamento, observacoes || null, valorTotal]
         );
 
@@ -363,9 +363,9 @@ exports.criarAdmin = async (req, res) => {
         // conflito
         const [conf] = await pool.query(
             `SELECT id FROM agendamentos
-       WHERE data_agendamento = ?
-         AND hora_agendamento = ?
-         AND status IN ('AGENDADO', 'CONFIRMADO')`,
+             WHERE data_agendamento = ?
+               AND hora_agendamento = ?
+               AND status IN ('AGENDADO', 'CONFIRMADO')`,
             [data_agendamento, hora_agendamento]
         );
         if (conf.length > 0) return res.status(400).json({ erro: "Esse horário já está ocupado" });
@@ -389,8 +389,8 @@ exports.criarAdmin = async (req, res) => {
         // cria como CONFIRMADO (feito pelo salão)
         const [result] = await pool.query(
             `INSERT INTO agendamentos
-       (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'CONFIRMADO', 0, 'PENDENTE')`,
+             (cliente_id, servico_id, servico_id_2, data_agendamento, hora_agendamento, observacoes, valor_cobrado, status, pago, forma_pagamento)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'CONFIRMADO', 0, 'PENDENTE')`,
             [clienteId, s1, s2, data_agendamento, hora_agendamento, observacoes || null, valorTotal]
         );
 

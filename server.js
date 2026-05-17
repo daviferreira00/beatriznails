@@ -13,6 +13,8 @@ const financeiroRoutes = require("./src/routes/financeiro.routes");
 const bloqueiosRoutes = require("./src/routes/bloqueios.routes");
 const authRoutes = require("./src/routes/auth.routes");
 const usuariosRoutes = require("./src/routes/usuarios.routes");
+const configAgendaRoutes = require("./src/routes/configAgenda.routes");
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,7 +37,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 app.use("/api/relatorios", relatoriosRoutes);
-
+app.use("/api/config-agenda", configAgendaRoutes);
 
 app.use((req, res, next) => {
     console.log(`➡️  [REQ] ${req.method} ${req.url}`);

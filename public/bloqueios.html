@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bloqueios | Beatriz Beauty</title>
+    <title>Disponibilidade | Beatriz Beauty</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#f7f2f5] min-h-screen">
@@ -16,8 +16,8 @@
             <div class="flex items-center gap-3">
                 <img src="/assets/logo-beatriz-beauty.jpg" class="w-12 h-12 rounded-2xl object-cover border border-[#efe4ea]" />
                 <div>
-                    <h1 class="text-2xl font-semibold text-[#b78ea5]">Bloquear horários</h1>
-                    <p class="text-sm text-[#7d6a75]">Defina horários indisponíveis</p>
+                    <h1 class="text-2xl font-semibold text-[#b78ea5]">Disponibilidade</h1>
+                    <p class="text-sm text-[#7d6a75]">Defina dias/horários de trabalho e bloqueios</p>
                 </div>
             </div>
         </div>
@@ -27,45 +27,154 @@
         <div id="mensagem" class="hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center"></div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <section class="xl:col-span-1 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
-                <h2 class="text-xl font-semibold text-[#3f3138] mb-4">Novo bloqueio</h2>
+            <!-- COLUNA ESQUERDA: Calendário + Agenda semanal -->
+            <section class="xl:col-span-1 space-y-6">
 
-                <form id="formBloqueio" class="space-y-4">
-                    <input id="data" type="date" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                    <div class="grid grid-cols-2 gap-3">
-                        <input id="inicio" type="time" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
-                        <input id="fim" type="time" required class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                <!-- Calendário -->
+                <div class="bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-[#3f3138]">Calendário</h2>
+                        <div class="flex gap-2">
+                            <button id="prevMonth" class="px-3 py-2 rounded-2xl bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] transition">‹</button>
+                            <button id="nextMonth" class="px-3 py-2 rounded-2xl bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] transition">›</button>
+                        </div>
                     </div>
-                    <input id="motivo" type="text" placeholder="Motivo (opcional)" class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
 
-                    <button class="w-full rounded-2xl bg-[#b78ea5] text-white py-3.5 font-semibold hover:bg-[#a97f97] transition">
-                        Criar bloqueio
-                    </button>
-                </form>
+                    <p id="monthLabel" class="text-sm text-[#7d6a75] mt-2"></p>
+
+                    <div class="grid grid-cols-7 gap-2 mt-4 text-xs text-[#7d6a75]">
+                        <div class="text-center">Dom</div><div class="text-center">Seg</div><div class="text-center">Ter</div>
+                        <div class="text-center">Qua</div><div class="text-center">Qui</div><div class="text-center">Sex</div><div class="text-center">Sáb</div>
+                    </div>
+
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-2 mt-2"></div>
+
+                    <div class="mt-4 rounded-2xl border border-[#efe4ea] bg-[#fcfafb] p-4">
+                        <p class="text-sm font-semibold text-[#3f3138]">Data selecionada</p>
+                        <p id="selectedDateLabel" class="text-sm text-[#7d6a75] mt-1">—</p>
+                        <p class="text-xs text-[#7d6a75] mt-2">
+                            Clique no dia no calendário para preencher automaticamente o “Novo bloqueio”.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Agenda semanal (dias/horários de trabalho) -->
+                <div class="bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-xl font-semibold text-[#3f3138]">Agenda semanal</h2>
+                            <p class="text-sm text-[#7d6a75]">Dias que trabalha e horário padrão.</p>
+                        </div>
+                        <button id="btnCarregarSemana" class="px-4 py-2 rounded-2xl bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] transition font-medium">
+                            Atualizar
+                        </button>
+                    </div>
+
+                    <form id="formSemana" class="space-y-4 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Início</label>
+                                <input id="semanaInicio" type="time" required
+                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[#5e4b55] mb-2">Fim</label>
+                                <input id="semanaFim" type="time" required
+                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-[#5e4b55] mb-2">Intervalo (min)</label>
+                            <input id="semanaIntervalo" type="number" min="5" step="5" required
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]"
+                                   placeholder="Ex: 60" />
+                            <p class="text-xs text-[#7d6a75] mt-2">Define de quanto em quanto tempo aparecem horários (ex: 60 min).</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <label class="flex items-center gap-2 p-3 rounded-2xl border border-[#efe4ea] bg-[#fcfafb]">
+                                <input type="checkbox" class="diaSemana accent-[#b78ea5]" value="1" /> Segunda
+                            </label>
+                            <label class="flex items-center gap-2 p-3 rounded-2xl border border-[#efe4ea] bg-[#fcfafb]">
+                                <input type="checkbox" class="diaSemana accent-[#b78ea5]" value="2" /> Terça
+                            </label>
+                            <label class="flex items-center gap-2 p-3 rounded-2xl border border-[#efe4ea] bg-[#fcfafb]">
+                                <input type="checkbox" class="diaSemana accent-[#b78ea5]" value="3" /> Quarta
+                            </label>
+                            <label class="flex items-center gap-2 p-3 rounded-2xl border border-[#efe4ea] bg-[#fcfafb]">
+                                <input type="checkbox" class="diaSemana accent-[#b78ea5]" value="4" /> Quinta
+                            </label>
+                            <label class="flex items-center gap-2 p-3 rounded-2xl border border-[#efe4ea] bg-[#fcfafb]">
+                                <input type="checkbox" class="diaSemana accent-[#b78ea5]" value="5" /> Sexta
+                            </label>
+                            <label class="flex items-center gap-2 p-3 rounded-2xl border border-[#efe4ea] bg-[#fcfafb]">
+                                <input type="checkbox" class="diaSemana accent-[#b78ea5]" value="6" /> Sábado
+                            </label>
+                        </div>
+
+                        <button class="w-full rounded-2xl bg-[#b78ea5] text-white py-3.5 font-semibold hover:bg-[#a97f97] transition">
+                            Salvar agenda semanal
+                        </button>
+                    </form>
+                </div>
+
             </section>
 
+            <!-- COLUNA CENTRAL/DIREITA: Bloqueios por data + lista -->
             <section class="xl:col-span-2 bg-white rounded-3xl border border-[#eadde5] p-6 shadow-sm">
                 <div class="flex items-center justify-between mb-5">
-                    <h2 class="text-xl font-semibold text-[#3f3138]">Bloqueios cadastrados</h2>
+                    <div>
+                        <h2 class="text-xl font-semibold text-[#3f3138]">Bloqueios por data</h2>
+                        <p class="text-sm text-[#7d6a75]">Use quando tiver folga, evento, encaixes, etc.</p>
+                    </div>
                     <button id="atualizar" class="bg-[#f3e7ee] text-[#b78ea5] hover:bg-[#eddce6] px-4 py-2 rounded-2xl font-medium transition">
                         Atualizar
                     </button>
                 </div>
 
-                <div id="lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Form bloqueio -->
+                    <div class="lg:col-span-1">
+                        <h3 class="text-lg font-semibold text-[#3f3138] mb-3">Novo bloqueio</h3>
+                        <form id="formBloqueio" class="space-y-4">
+                            <input id="data" type="date" required
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <input id="inicio" type="time" required
+                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                                <input id="fim" type="time" required
+                                       class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+                            </div>
+
+                            <input id="motivo" type="text" placeholder="Motivo (opcional)"
+                                   class="w-full rounded-2xl border border-[#e8d9e2] px-4 py-3 outline-none focus:ring-4 focus:ring-[#f3e7ee] focus:border-[#c29ab0]" />
+
+                            <button class="w-full rounded-2xl bg-[#b78ea5] text-white py-3.5 font-semibold hover:bg-[#a97f97] transition">
+                                Criar bloqueio
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Lista bloqueios -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-lg font-semibold text-[#3f3138] mb-3">Bloqueios cadastrados</h3>
+                        <div id="lista" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+                </div>
             </section>
+
         </div>
     </main>
 </div>
 
 <script src="/components/sidebar.js"></script>
 <script src="/components/auth.js"></script>
-<script>
-    const msg = document.getElementById("mensagem");
-    const form = document.getElementById("formBloqueio");
-    const lista = document.getElementById("lista");
-    const btnAtualizar = document.getElementById("atualizar");
 
+<script>
+    // ---------- mensagens ----------
+    const msg = document.getElementById("mensagem");
     function show(texto, tipo="erro"){
         msg.textContent = texto;
         msg.className = "mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center block";
@@ -75,26 +184,100 @@
     }
     function hide(){ msg.className = "hidden mb-6 rounded-2xl px-4 py-3 text-sm font-medium text-center"; }
 
+    // ---------- calendário ----------
+    const monthLabel = document.getElementById("monthLabel");
+    const calendarGrid = document.getElementById("calendarGrid");
+    const selectedDateLabel = document.getElementById("selectedDateLabel");
+    const prevMonthBtn = document.getElementById("prevMonth");
+    const nextMonthBtn = document.getElementById("nextMonth");
+
+    const inputDataBloqueio = document.getElementById("data");
+
+    let currentMonth = new Date();
+    currentMonth.setDate(1);
+
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function isoDate(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+    function brDate(iso){ const [y,m,dd]=iso.split("-"); return `${dd}/${m}/${y}`; }
+
+    function renderCalendar(){
+        calendarGrid.innerHTML = "";
+
+        const y = currentMonth.getFullYear();
+        const m = currentMonth.getMonth();
+
+        const nomeMes = currentMonth.toLocaleString("pt-BR", { month:"long" });
+        monthLabel.textContent = `${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)} de ${y}`;
+
+        const firstDay = new Date(y, m, 1);
+        const startWeekday = firstDay.getDay(); // 0..6 (dom..sab)
+        const daysInMonth = new Date(y, m+1, 0).getDate();
+
+        // espaços vazios
+        for(let i=0;i<startWeekday;i++){
+            const div = document.createElement("div");
+            div.className = "h-10";
+            calendarGrid.appendChild(div);
+        }
+
+        // dias
+        const todayIso = isoDate(new Date());
+
+        for(let day=1; day<=daysInMonth; day++){
+            const d = new Date(y, m, day);
+            const iso = isoDate(d);
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+                "h-10 rounded-2xl border border-[#efe4ea] bg-white hover:bg-[#f3e7ee] hover:border-[#dcbccc] transition text-sm font-semibold text-[#3f3138]";
+
+            if (iso === todayIso) btn.classList.add("ring-2","ring-[#b78ea5]/40");
+            btn.textContent = String(day);
+
+            btn.addEventListener("click", () => {
+                inputDataBloqueio.value = iso;
+                selectedDateLabel.textContent = brDate(iso);
+            });
+
+            calendarGrid.appendChild(btn);
+        }
+    }
+
+    prevMonthBtn.addEventListener("click", () => {
+        currentMonth.setMonth(currentMonth.getMonth() - 1);
+        renderCalendar();
+    });
+    nextMonthBtn.addEventListener("click", () => {
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
+        renderCalendar();
+    });
+
+    // ---------- bloqueios ----------
+    const form = document.getElementById("formBloqueio");
+    const lista = document.getElementById("lista");
+    const btnAtualizar = document.getElementById("atualizar");
+
     function card(b){
         const div = document.createElement("div");
         div.className = "rounded-3xl border border-[#efe4ea] p-5 bg-[#fcfafb]";
         const d = String(b.data_bloqueio).slice(0,10).split("-").reverse().join("/");
         div.innerHTML = `
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="font-semibold text-[#3f3138]">${d}</p>
-            <p class="text-sm text-[#7d6a75] mt-2">⏱️ ${String(b.hora_inicio).slice(0,5)} - ${String(b.hora_fim).slice(0,5)}</p>
-            <p class="text-sm text-[#7d6a75] mt-1">📝 ${b.motivo || "Sem motivo"}</p>
-          </div>
-          <button data-id="${b.id}" class="btn-del bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition">
-            Excluir
-          </button>
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <p class="font-semibold text-[#3f3138]">${d}</p>
+          <p class="text-sm text-[#7d6a75] mt-2">⏱️ ${String(b.hora_inicio).slice(0,5)} - ${String(b.hora_fim).slice(0,5)}</p>
+          <p class="text-sm text-[#7d6a75] mt-1">📝 ${b.motivo || "Sem motivo"}</p>
         </div>
-      `;
+        <button data-id="${b.id}" class="btn-del bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-2xl font-medium transition shrink-0">
+          Excluir
+        </button>
+      </div>
+    `;
         return div;
     }
 
-    async function carregar(){
+    async function carregarBloqueios(){
         hide();
         lista.innerHTML = `<div class="col-span-full text-[#7d6a75]">Carregando...</div>`;
         const res = await fetch("/api/bloqueios");
@@ -117,7 +300,7 @@
                 const j = await r.json();
                 if(!r.ok){ show(j.erro || "Erro ao excluir"); return; }
                 show(j.mensagem || "Removido", "sucesso");
-                carregar();
+                carregarBloqueios();
             });
         });
     }
@@ -143,11 +326,71 @@
 
         show(data.mensagem || "Bloqueio criado", "sucesso");
         form.reset();
-        carregar();
+        carregarBloqueios();
     });
 
-    btnAtualizar.addEventListener("click", carregar);
-    carregar();
+    btnAtualizar.addEventListener("click", carregarBloqueios);
+
+    // ---------- agenda semanal ----------
+    const formSemana = document.getElementById("formSemana");
+    const btnCarregarSemana = document.getElementById("btnCarregarSemana");
+    const semanaInicio = document.getElementById("semanaInicio");
+    const semanaFim = document.getElementById("semanaFim");
+    const semanaIntervalo = document.getElementById("semanaIntervalo");
+    const diasSemanaInputs = Array.from(document.querySelectorAll(".diaSemana"));
+
+    function marcarDiasSelecionados(arr){
+        diasSemanaInputs.forEach(chk => chk.checked = arr.includes(Number(chk.value)));
+    }
+
+    async function carregarSemana(){
+        hide();
+        const res = await fetch("/api/config-agenda");
+        const data = await res.json();
+        if(!res.ok){ show(data.erro || "Erro ao carregar agenda semanal"); return; }
+
+        semanaInicio.value = String(data.hora_inicio || "08:00").slice(0,5);
+        semanaFim.value = String(data.hora_fim || "17:00").slice(0,5);
+        semanaIntervalo.value = Number(data.intervalo_minutos || 60);
+
+        marcarDiasSelecionados(Array.isArray(data.dias_semana) ? data.dias_semana : [1,2,3,4,5,6]);
+    }
+
+    formSemana.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        hide();
+
+        const dias = diasSemanaInputs.filter(x=>x.checked).map(x=>Number(x.value));
+
+        if(dias.length === 0){
+            show("Selecione pelo menos 1 dia da semana.");
+            return;
+        }
+
+        const payload = {
+            hora_inicio: semanaInicio.value + ":00",
+            hora_fim: semanaFim.value + ":00",
+            intervalo_minutos: Number(semanaIntervalo.value || 60),
+            dias_semana: dias
+        };
+
+        const res = await fetch("/api/config-agenda", {
+            method:"PUT",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if(!res.ok){ show(data.erro || "Erro ao salvar agenda semanal"); return; }
+
+        show(data.mensagem || "Agenda semanal salva com sucesso", "sucesso");
+    });
+
+    btnCarregarSemana.addEventListener("click", carregarSemana);
+
+    // init
+    renderCalendar();
+    carregarSemana();
+    carregarBloqueios();
 </script>
 </body>
 </html>
